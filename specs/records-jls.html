@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc,fixuphtml" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Record Classes</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="../resources/jdk-default.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="stylesheet" href="../resources/spec-changes.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Record Classes</h1>
+<p class="subtitle">Changes to the Java® Language Specification • Version 16.0.1+9-24</p>
+</header>
+<nav id="TOC" title="Table Of Contents">
+<ul>
+<li><a href="#jls-1">Chapter 1: Introduction</a><ul>
+<li><a href="#jls-1.1">1.1 Organization of the Specification</a></li>
+</ul></li>
+<li><a href="#jls-3">Chapter 3: Lexical Structure</a><ul>
+<li><a href="#jls-3.8">3.8 Identifiers</a></li>
+<li><a href="#jls-3.9">3.9 Keywords</a></li>
+</ul></li>
+<li><a href="#jls-4">Chapter 4: Types, Values, and Variables</a><ul>
+<li><a href="#jls-4.11">4.11 Where Types Are Used</a></li>
+</ul></li>
+<li><a href="#jls-6">Chapter 6: Names</a><ul>
+<li><a href="#jls-6.1">6.1 Declarations</a></li>
+<li><a href="#jls-6.3">6.3 Scope of a Declaration</a></li>
+<li><a href="#jls-6.5">6.5 Determining the Meaning of a Name</a><ul>
+<li><a href="#jls-6.5.1">6.5.1 Syntactic Classification of a Name According to Context</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#jls-8">Chapter 8: Classes</a><ul>
+<li><a href="#jls-8.1">8.1 Class Declarations</a><ul>
+<li><a href="#jls-8.1.1">8.1.1 Class Modifiers</a><ul>
+<li><a href="#jls-8.1.1.4">8.1.1.4 <code>static</code> Classes</a></li>
+</ul></li>
+<li><a href="#jls-8.1.3">8.1.3 Inner Classes and Enclosing Instances</a></li>
+<li><a href="#jls-8.1.4">8.1.4 Superclasses</a></li>
+</ul></li>
+<li><a href="#jls-8.5">8.5 Member Class and Interface Declarations</a></li>
+<li><a href="#jls-8.8">8.8 Constructor Declarations</a></li>
+<li><a href="#jls-8.10"><strong>8.10 Record Declarations</strong></a><ul>
+<li><a href="#jls-8.10.1"><strong>8.10.1 Record Components</strong></a></li>
+<li><a href="#jls-8.10.2"><strong>8.10.2 Record Bodies</strong></a></li>
+<li><a href="#jls-8.10.3"><strong>8.10.3 Record Members</strong></a></li>
+<li><a href="#jls-8.10.4"><strong>8.10.4 Record Constructor Declarations</strong></a></li>
+</ul></li>
+</ul></li>
+<li><a href="#jls-9">Chapter 9: Interfaces</a><ul>
+<li><a href="#jls-9.6">9.6 Annotation Interfaces</a><ul>
+<li><a href="#jls-9.6.4">9.6.4 Predefined Annotation Interfaces</a><ul>
+<li><a href="#jls-9.6.4.1">9.6.4.1 <code>@Target</code></a></li>
+<li><a href="#jls-9.6.4.4">9.6.4.4 <code>@Override</code></a></li>
+</ul></li>
+</ul></li>
+<li><a href="#jls-9.7">9.7 Annotations</a><ul>
+<li><a href="#jls-9.7.4">9.7.4 Where Annotations May Appear</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#jls-10">Chapter 10: Arrays</a><ul>
+<li><a href="#jls-10.2">10.2 Array Variables</a></li>
+</ul></li>
+<li><a href="#jls-13">Chapter 13: Binary Compatibility</a><ul>
+<li><a href="#jls-13.1">13.1 The Form of a Binary</a></li>
+<li><a href="#jls-13.4">13.4 Evolution of Classes</a><ul>
+<li><a href="#jls-13.4.27"><strong>13.4.27 Evolution of Record Classes</strong></a></li>
+</ul></li>
+</ul></li>
+<li><a href="#jls-14">Chapter 14: Blocks and Statements</a><ul>
+<li><a href="#jls-14.3">14.3 Local Class and Interface Declarations</a></li>
+</ul></li>
+<li><a href="#jls-16">Chapter 16: Definite Assignment</a></li>
+</ul>
+</nav>
+<main><p>This document describes changes to the <a href="https://docs.oracle.com/javase/specs/jls/se15/html">Java Language Specification</a>, as modified by the two specification change documents (i) <a href="class-terminology-jls.html">Consistent Class and Interface Terminology</a> and (ii) <a href="local-statics-jls.html">Local and Nested Static Declarations</a>, to support <em>Record Classes</em>, a feature of Java SE 16. See <a href="https://openjdk.java.net/jeps/395">JEP 395</a> for an overview of the feature.</p>
+<p>The changes are the same as those in the <a href="https://docs.oracle.com/javase/specs/jls/se15/preview/specs/records-jls.html">second preview</a> of Records in Java SE 15, except for minor editorial changes and the following:</p>
+<ul>
+<li><p>To relax the current restriction on an inner class from declaring a member that is explicitly or implicitly static. This will now be permitted and, in particular, will allow an inner class to declare a record class member. (These changes are detailed in the document on <a href="local-statics-jls.html">Local and Nested Static Declarations</a>.)</p></li>
+<li><p>Clarify that the scope of a type parameter of a generic record class includes the record component list (<a href="#jls-6.3">6.3</a>).</p></li>
+<li><p>Add text to explicitly rule out using C-style array declaration of record components (<a href="#jls-10.2">10.2</a>).</p></li>
+<li><p>Clarify that any annotations on record components that apply to the implicitly declared accessor method must satisfy the existing rules for annotating a method declaration (<a href="#jls-8.10.3">8.10.3</a>).</p></li>
+<li><p>Clarify how the implicit formal parameter list for a compact constructor is derived from the record component list (<a href="#jls-8.10.4">8.10.4</a>).</p></li>
+<li><p>Align the description of the implicitly declared <code>equals</code>, <code>hashCode</code>, and <code>toString</code> methods with the implementation. Also add a discussion around the semantic assumptions of accessor methods and equality (<a href="#jls-8.10.3">8.10.3</a>)</p></li>
+</ul>
+<!--
+- A new section ([8.10.5]) defining new restrictions on annotations of record
+  components to ensure that they are not lost.
+-->
+<p>A <a href="records-jvms.html">companion document</a> describes the changes needed to the <a href="https://docs.oracle.com/javase/specs/jvms/se15/html">Java Virtual Machine Specification</a> to support record classes.</p>
+<p>A further <a href="records-serialization.html">companion document</a> describes changes to the <a href="https://docs.oracle.com/en/java/javase/15/docs/specs/serialization/">Java Object Serialization Specification</a> to support serializable record classes.</p>
+<p>Changes are described with respect to existing sections of the JLS. New text is indicated <strong>like this</strong> and deleted text is indicated <del>like this</del>. Explanation and discussion, as needed, is set aside in grey boxes.</p>
+<h2 id="jls-1">Chapter 1: Introduction</h2>
+<h3 id="jls-1.1">1.1 Organization of the Specification</h3>
+<p>...</p>
+<p>Chapter 8 describes classes. The members of classes are classes, interfaces, fields (variables) and methods. Class variables exist once per class. Class methods operate without reference to a specific object. Instance variables are dynamically created in objects that are instances of classes. Instance methods are invoked on instances of classes; such instances become the current object <code>this</code> during their execution, supporting the object-oriented programming style.</p>
+<p>Classes support single inheritance, in which each class has a single superclass. Each class inherits members from its superclass, and ultimately from the class <code>Object</code>. Variables of a class type can reference an instance of the named class or of any subclass of that class, allowing new classes to be used with existing methods, polymorphically.</p>
+<p>Classes support concurrent programming with <code>synchronized</code> methods. Methods declare the checked exceptions that can arise from their execution, which allows compile-time checking to ensure that exceptional conditions are handled. Objects can declare a <code>finalize</code> method that will be invoked before the objects are discarded by the garbage collector, allowing the objects to clean up their state.</p>
+<p>For simplicity, the language has neither declaration &quot;headers&quot; separate from the implementation of a class nor separate type and class hierarchies.</p>
+<p>A special form of classes, enum classes, support the definition of small sets of values and their manipulation in a type safe manner. Unlike enumerations in other languages, enum constants are objects and may have their own methods.</p>
+<p><strong>Record classes are another special kind of class that support the compact expression of simple objects that serve as aggregates of values.</strong></p>
+<p>...</p>
+<h2 id="jls-3">Chapter 3: Lexical Structure</h2>
+<h3 id="jls-3.8">3.8 Identifiers</h3>
+<p>An <em>identifier</em> is an unlimited-length sequence of <em>Java letters</em> and <em>Java digits</em>, the first of which must be a <em>Java letter</em>.</p>
+<dl>
+<dt><em>Identifier:</em></dt>
+<dd><em>IdentifierChars</em> <em>but not a</em> <em>Keyword</em> <em>or</em> <em>BooleanLiteral</em> <em>or</em> <em>NullLiteral</em>
+</dd>
+<dt><em>IdentifierChars:</em></dt>
+<dd><em>JavaLetter</em> {<em>JavaLetterOrDigit</em>}
+</dd>
+<dt><em>JavaLetter:</em></dt>
+<dd><em>any Unicode character that is a &quot;Java letter&quot;</em>
+</dd>
+<dt><em>JavaLetterOrDigit:</em></dt>
+<dd><em>any Unicode character that is a &quot;Java letter-or-digit&quot;</em>
+</dd>
+</dl>
+<p>A &quot;Java letter&quot; is a character for which the method <code>Character.isJavaIdentifierStart(int)</code> returns true.</p>
+<p>A &quot;Java letter-or-digit&quot; is a character for which the method <code>Character.isJavaIdentifierPart(int)</code> returns true.</p>
+<blockquote>
+<p>The &quot;Java letters&quot; include uppercase and lowercase ASCII Latin letters <code>A-Z</code> (<code>\u0041-\u005a</code>), and <code>a-z</code> (<code>\u0061-\u007a</code>), and, for historical reasons, the ASCII dollar sign (<code>$</code>, or <code>\u0024</code>) and underscore (<code>_</code>, or <code>\u005f</code>). The dollar sign should be used only in mechanically generated source code or, rarely, to access pre-existing names on legacy systems. The underscore may be used in identifiers formed of two or more characters, but it cannot be used as a one-character identifier due to being a keyword.</p>
+</blockquote>
+<blockquote>
+<p>The &quot;Java digits&quot; include the ASCII digits <code>0-9</code> (<code>\u0030-\u0039</code>).</p>
+</blockquote>
+<p>Letters and digits may be drawn from the entire Unicode character set, which supports most writing scripts in use in the world today, including the large sets for Chinese, Japanese, and Korean. This allows programmers to use identifiers in their programs that are written in their native languages.</p>
+<p>An identifier cannot have the same spelling (Unicode character sequence) as a keyword (<a href="#jls-3.9">3.9</a>), boolean literal (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-3.html#jls-3.10.3">3.10.3</a>), or the null literal (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-3.html#jls-3.10.7">3.10.7</a>), or a compile-time error occurs.</p>
+<p>Two identifiers are the same only if, after ignoring characters that are ignorable, the identifiers have the same Unicode character for each letter or digit. An ignorable character is a character for which the method <code>Character.isIdentifierIgnorable(int)</code> returns true. Identifiers that have the same external appearance may yet be different.</p>
+<blockquote>
+<p>For example, the identifiers consisting of the single letters LATIN CAPITAL LETTER A (<code>A</code>, <code>\u0041</code>), LATIN SMALL LETTER A (<code>a</code>, <code>\u0061</code>), GREEK CAPITAL LETTER ALPHA (<code>A</code>, <code>\u0391</code>), CYRILLIC SMALL LETTER A (<code>a</code>, <code>\u0430</code>) and MATHEMATICAL BOLD ITALIC SMALL A (<code>a</code>, <code>\ud835\udc82</code>) are all different.</p>
+<p>Unicode composite characters are different from their canonical equivalent decomposed characters. For example, a LATIN CAPITAL LETTER A ACUTE (<code>Á</code>, <code>\u00c1</code>) is different from a LATIN CAPITAL LETTER A (<code>A</code>, <code>\u0041</code>) immediately followed by a NON-SPACING ACUTE (<code>´</code>, <code>\u0301</code>) in identifiers. See The Unicode Standard, Section 3.11 &quot;Normalization Forms&quot;.</p>
+</blockquote>
+<blockquote>
+<p>Examples of identifiers are:</p>
+<ul>
+<li><code>String</code></li>
+<li><code>i3</code></li>
+<li>αρετη</li>
+<li><code>MAX_VALUE</code></li>
+<li><code>isLetterOrDigit</code></li>
+</ul>
+</blockquote>
+<p>The identifiers <code>var</code><strong>,</strong> <del>and</del> <code>yield</code><strong>, and <code>record</code></strong> are <em>restricted identifiers</em> because they are not allowed in some contexts.</p>
+<p>A <em>type identifier</em> is <del>an identifier that is not the character sequence <code>var</code> or the character sequence <code>yield</code></del> <strong>any identifier other than the character sequences <code>var</code>, <code>yield</code>, and <code>record</code></strong>.</p>
+<dl>
+<dt><em>TypeIdentifier:</em></dt>
+<dd><em>Identifier</em> <em>but not</em> <code>var</code><strong>,</strong> <del><em>or</em></del> <code>yield</code> <strong>or <code>record</code></strong>
+</dd>
+</dl>
+<blockquote>
+<p>Type identifiers are used in certain contexts involving the declaration or use of types. For example, the name of a class must be a <em>TypeIdentifier</em>, so it is illegal to declare a class named <code>var</code><strong>,</strong> <del>or</del> <code>yield</code><strong>, or <code>record</code></strong> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1">8.1</a>).</p>
+</blockquote>
+<p>An <em>unqualified method identifier</em> is an identifier that is not the character sequence <code>yield</code>.</p>
+<dl>
+<dt><em>UnqualifiedMethodIdentifier:</em></dt>
+<dd><em>Identifier</em> <em>but not</em> <code>yield</code>
+</dd>
+</dl>
+<blockquote>
+<p>This restriction allows <code>yield</code> to be used in a <code>yield</code> statement (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.21">14.21</a>) and still also be used as a (qualified) method name for compatibility reasons.</p>
+</blockquote>
+<h3 id="jls-3.9">3.9 Keywords</h3>
+<p>51 character sequences, formed from ASCII letters, are reserved for use as keywords and cannot be used as identifiers (<a href="#jls-3.8">3.8</a>).</p>
+<dl>
+<dt><em>Keyword:</em></dt>
+<dd>(one of)
+</dd>
+<dd><code>abstract continue for new switch</code><br />
+<code>assert default if package synchronized</code><br />
+<code>boolean do goto private this</code><br />
+<code>break double implements protected throw</code><br />
+<code>byte else import public throws</code><br />
+<code>case enum instanceof return transient</code><br />
+<code>catch extends int short try</code><br />
+<code>char final interface static void</code><br />
+<code>class finally long strictfp volatile</code><br />
+<code>const float native super while</code><br />
+<code>_</code> (underscore)
+</dd>
+</dl>
+<blockquote>
+<p>The keywords <code>const</code> and <code>goto</code> are reserved, even though they are not currently used. This may allow a Java compiler to produce better error messages if these C++ keywords incorrectly appear in programs. The keyword <code>_</code> (underscore) is reserved for possible future use in parameter declarations.</p>
+</blockquote>
+<blockquote>
+<p>A variety of character sequences are sometimes assumed, incorrectly, to be keywords:</p>
+</blockquote>
+<blockquote>
+<ul>
+<li><p><code>true</code> and <code>false</code> are not keywords, but rather boolean literals (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-3.html#jls-3.10.3">3.10.3</a>).</p></li>
+<li><p><code>null</code> is not a keyword, but rather the null literal (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-3.html#jls-3.10.7">3.10.7</a>).</p></li>
+<li><p><code>var</code><strong>,</strong> <del>and</del> <code>yield</code><strong>, and <code>record</code></strong> are not keywords, but rather restricted identifiers (<a href="#jls-3.8">3.8</a>). <code>var</code> has special meaning as the type of a local variable declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.4">14.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.14.1">14.14.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.14.2">14.14.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.20.3">14.20.3</a>) and the type of a lambda formal parameter (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.27.1">15.27.1</a>). <code>yield</code> has special meaning in a <code>yield</code> statement (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.21">14.21</a>). All invocations of a method named <code>yield</code> must be qualified so as to be distinguished from a <code>yield</code> statement. <strong><code>record</code> has special meaning in a record declaration (<a href="#jls-8.10">8.10</a>).</strong></p></li>
+</ul>
+</blockquote>
+<p>A further ten character sequences are <em>restricted keywords</em>: <code>open</code>, <code>module</code>, <code>requires</code>, <code>transitive</code>, <code>exports</code>, <code>opens</code>, <code>to</code>, <code>uses</code>, <code>provides</code>, and <code>with</code>. These character sequences are tokenized as keywords solely where they appear as terminals in the <em>ModuleDeclaration</em>, <em>ModuleDirective</em>, and <em>RequiresModifier</em> productions (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-7.html#jls-7.7">7.7</a>). They are tokenized as identifiers everywhere else, for compatibility with programs written before the introduction of restricted keywords. There is one exception: immediately to the right of the character sequence <code>requires</code> in the <em>ModuleDirective</em> production, the character sequence <code>transitive</code> is tokenized as a keyword unless it is followed by a separator, in which case it is tokenized as an identifier.</p>
+<h2 id="jls-4">Chapter 4: Types, Values, and Variables</h2>
+<h3 id="jls-4.11">4.11 Where Types Are Used</h3>
+<p>Types are used in most kinds of declaration and in certain kinds of expression. Specifically, there are <del>16</del> <strong>17</strong> <em>type contexts</em> where types are used:</p>
+<ul>
+<li><p>In declarations:</p>
+<ol type="1">
+<li><p>A type in the <code>extends</code> or <code>implements</code> clause of a class declaration (<a href="#jls-8.1.4">8.1.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.5">8.1.5</a>, <a href="#jls-8.5">8.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.5">9.5</a>)</p></li>
+<li><p>A type in the <code>extends</code> clause of an interface declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.1.3">9.1.3</a>, <a href="#jls-8.5">8.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.5">9.5</a>)</p></li>
+<li><p>The return type of a method (including the type of an element of an annotation interface) (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.5">8.4.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.4">9.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.6.1">9.6.1</a>)</p></li>
+<li><p>A type in the <code>throws</code> clause of a method or constructor (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.6">8.4.6</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.5">8.8.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.4">9.4</a>)</p></li>
+<li><p>A type in the <code>extends</code> clause of a type parameter declaration of a generic class, interface, method, or constructor (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.2">8.1.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.1.2">9.1.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.4">8.4.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.4">8.8.4</a>)</p></li>
+<li><p>The type in a field declaration of a class or interface (including an enum constant) (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.3">8.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.3">9.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.9.1">8.9.1</a>)</p></li>
+<li><p>The type in a formal parameter declaration of a method, constructor, or lambda expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.1">8.4.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.1">8.8.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.4">9.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.27.1">15.27.1</a>)</p></li>
+<li><p>The type of the receiver parameter of a method (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4">8.4</a>)</p></li>
+<li><p>The type in a local variable declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.4">14.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.14.1">14.14.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.14.2">14.14.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.20.3">14.20.3</a>)</p></li>
+<li><p>The type in an exception parameter declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.20">14.20</a>)</p></li>
+<li><p><strong>The type of a record component in a record declaration (<a href="#jls-8.10.1">8.10.1</a>)</strong></p></li>
+</ol></li>
+<li><p>In expressions:</p>
+<ol type="1">
+<li><p>A type in the explicit type argument list to an explicit constructor invocation statement, class instance creation expression, method invocation expression, or method reference expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.7.1">8.8.7.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9">15.9</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.12">15.12</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.13">15.13</a>)</p></li>
+<li><p>In an unqualified class instance creation expression, as the class type to be instantiated (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9">15.9</a>) or as the direct superclass type or direct superinterface type of an anonymous class to be instantiated (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9.5">15.9.5</a>)</p></li>
+<li><p>The element type in an array creation expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.10.1">15.10.1</a>)</p></li>
+<li><p>The type in the cast operator of a cast expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.16">15.16</a>)</p></li>
+<li><p>The type that follows the <code>instanceof</code> relational operator (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.20.2">15.20.2</a>)</p></li>
+<li><p>In a method reference expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.13">15.13</a>), as the reference type to search for a member method or as the class type or array type to construct.</p></li>
+</ol></li>
+</ul>
+<p>Also, types are used as:</p>
+<ul>
+<li><p>The element type of an array type in any of the above contexts; and</p></li>
+<li><p>A non-wildcard type argument, or a bound of a wildcard type argument, of a parameterized type in any of the above contexts.</p></li>
+</ul>
+<p>Finally, there are two special terms in the Java programming language which denote the use of a type:</p>
+<ul>
+<li><p>An unbounded wildcard (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-4.html#jls-4.5.1">4.5.1</a>)</p></li>
+<li><p>The <code>...</code> in the type of a variable arity parameter (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.1">8.4.1</a>), to indicate an array type</p></li>
+</ul>
+<p>The meaning of types in type contexts is given by:</p>
+<ul>
+<li><p><a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-4.html#jls-4.2">4.2</a>, for primitive types</p></li>
+<li><p><a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-4.html#jls-4.4">4.4</a>, for type parameters</p></li>
+<li><p><a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-4.html#jls-4.5">4.5</a>, for class and interface types that are parameterized, or appear either as type arguments in a parameterized type or as bounds of wildcard type arguments in a parameterized type</p></li>
+<li><p><a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-4.html#jls-4.8">4.8</a>, for class and interface types that are raw</p></li>
+<li><p><a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-4.html#jls-4.9">4.9</a>, for intersection types in the bounds of type parameters</p></li>
+<li><p><a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-6.html#jls-6.5">6.5</a>, for types of non-generic classes and interfaces and type variables</p></li>
+<li><p><a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-10.html#jls-10.1">10.1</a>, for array types</p></li>
+</ul>
+<p>Some type contexts restrict how a reference type may be parameterized:</p>
+<ul>
+<li><p>The following type contexts require that if a type is a parameterized reference type, it has no wildcard type arguments:</p>
+<ul>
+<li><p>In an <code>extends</code> or <code>implements</code> clause of a class declaration (<a href="#jls-8.1.4">8.1.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.5">8.1.5</a>)</p></li>
+<li><p>In an <code>extends</code> clause of an interface declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.1.3">9.1.3</a>)</p></li>
+<li><p>In an unqualified class instance creation expression, as the class type to be instantiated (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9">15.9</a>) or as the direct superclass type or direct superinterface type of an anonymous class to be instantiated (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9.5">15.9.5</a>)</p></li>
+<li><p>In a method reference expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.13">15.13</a>), as the reference type to search for a member method or as the class type or array type to construct.</p></li>
+</ul>
+<p>In addition, no wildcard type arguments are permitted in the explicit type argument list to an explicit constructor invocation statement or class instance creation expression or method invocation expression or method reference expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.7.1">8.8.7.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9">15.9</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.12">15.12</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.13">15.13</a>).</p></li>
+<li><p>The following type contexts require that if a type is a parameterized reference type, it has only unbounded wildcard type arguments (i.e. it is a reifiable type) :</p>
+<ul>
+<li><p>As the element type in an array creation expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.10.1">15.10.1</a>)</p></li>
+<li><p>As the type that follows the <code>instanceof</code> relational operator (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.20.2">15.20.2</a>)</p></li>
+</ul></li>
+<li><p>The following type contexts disallow a parameterized reference type altogether, because they involve exceptions and the type of an exception is non-generic (<a href="#jls-6.1">6.1</a>):</p>
+<ul>
+<li><p>As the type of an exception that can be thrown by a method or constructor (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.6">8.4.6</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.5">8.8.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.4">9.4</a>)</p></li>
+<li><p>In an exception parameter declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.20">14.20</a>)</p></li>
+</ul></li>
+</ul>
+<blockquote>
+<p>In any type context where a type is used, it is possible to annotate the keyword denoting a primitive type or the <em>Identifier</em> denoting the simple name of a reference type. It is also possible to annotate an array type by writing an annotation to the left of the <code>[</code> at the desired level of nesting in the array type. Annotations in these locations are called <em>type annotations</em>, and are specified in <a href="#jls-9.7.4">9.7.4</a>. Here are some examples:</p>
+</blockquote>
+<blockquote>
+<ul>
+<li><p><code>@Foo int[] f;</code> annotates the primitive type <code>int</code></p></li>
+<li><p><code>int @Foo [] f;</code> annotates the array type <code>int[]</code></p></li>
+<li><p><code>int @Foo [][] f;</code> annotates the array type <code>int[][]</code></p></li>
+<li><p><code>int[] @Foo [] f;</code> annotates the array type <code>int[]</code> which is the component type of the array type <code>int[][]</code></p></li>
+</ul>
+</blockquote>
+<blockquote>
+<p><del>Five</del> <strong>Six</strong> of the <em>type contexts</em> which appear in declarations occupy the same syntactic real estate as a number of <em>declaration contexts</em> (<a href="#jls-9.6.4.1">9.6.4.1</a>):</p>
+</blockquote>
+<blockquote>
+<ul>
+<li><p>The return type of a method (including the type of an element of an annotation interface)</p></li>
+<li><p>The type in a field declaration of a class or interface (including an enum constant)</p></li>
+<li><p><strong>The type in a record component declaration of a record class</strong></p></li>
+<li><p>The type in a formal parameter declaration of a method, constructor, or lambda expression</p></li>
+<li><p>The type in a local variable declaration</p></li>
+<li><p>The type in an exception parameter declaration</p></li>
+</ul>
+</blockquote>
+<blockquote>
+<p>The fact that the same syntactic location in a program can be both a type context and a declaration context arises because the modifiers for a declaration immediately precede the type of the declared entity. <a href="#jls-9.7.4">9.7.4</a> explains how an annotation in such a location is deemed to appear in a type context or a declaration context or both.</p>
+</blockquote>
+<div class="example">
+<p>Example 4.11-1. Usage of a Type</p>
+<pre><code>import java.util.Random;
+import java.util.Collection;
+import java.util.ArrayList;
+
+class MiscMath&lt;T extends Number&gt; {
+    int divisor;
+    MiscMath(int divisor) { this.divisor = divisor; }
+    float ratio(long l) {
+        try {
+            l /= divisor;
+        } catch (Exception e) {
+            if (e instanceof ArithmeticException)
+                l = Long.MAX_VALUE;
+            else
+                l = 0;
+        }
+        return (float)l;
+    }
+    double gausser() {
+        Random r = new Random();
+        double[] val = new double[2];
+        val[0] = r.nextGaussian();
+        val[1] = r.nextGaussian();
+        return (val[0] + val[1]) / 2;
+    }
+    Collection&lt;Number&gt; fromArray(Number[] na) {
+        Collection&lt;Number&gt; cn = new ArrayList&lt;Number&gt;();
+        for (Number n : na) cn.add(n);
+        return cn;
+    }
+    &lt;S&gt; void loop(S s) { this.&lt;S&gt;loop(s); }  
+}</code></pre>
+<p>In this example, types are used in declarations of the following:</p>
+<ul>
+<li><p>Fields, which are the class variables and instance variables of classes (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.3">8.3</a>), and constants of interfaces (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.3">9.3</a>); here the field <code>divisor</code> in the class <code>MiscMath</code> is declared to be of type <code>int</code></p></li>
+<li><p>Method parameters (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.1">8.4.1</a>); here the parameter <code>l</code> of the method <code>ratio</code> is declared to be of type <code>long</code></p></li>
+<li><p>Method results (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4">8.4</a>); here the result of the method <code>ratio</code> is declared to be of type <code>float</code>, and the result of the method <code>gausser</code> is declared to be of type <code>double</code></p></li>
+<li><p>Constructor parameters (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.1">8.8.1</a>); here the parameter of the constructor for <code>MiscMath</code> is declared to be of type <code>int</code></p></li>
+<li><p>Local variables (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.4">14.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.14">14.14</a>); the local variables <code>r</code> and <code>val</code> of the method <code>gausser</code> are declared to be of types <code>Random</code> and <code>double[]</code> (array of <code>double</code>)</p></li>
+<li><p>Exception parameters (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.20">14.20</a>); here the exception parameter <code>e</code> of the <code>catch</code> clause is declared to be of type <code>Exception</code></p></li>
+<li><p>Type parameters (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-4.html#jls-4.4">4.4</a>); here the type parameter of <code>MiscMath</code> is a type variable <code>T</code> with the type <code>Number</code> as its declared bound</p></li>
+<li><p>In any declaration that uses a parameterized type; here the type <code>Number</code> is used as a type argument (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-4.html#jls-4.5.1">4.5.1</a>) in the parameterized type <code>Collection&lt;Number&gt;</code>.</p></li>
+</ul>
+<p>and in expressions of the following kinds:</p>
+<ul>
+<li><p>Class instance creations (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9">15.9</a>); here a local variable <code>r</code> of method <code>gausser</code> is initialized by a class instance creation expression that uses the type <code>Random</code></p></li>
+<li><p>Generic class (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.2">8.1.2</a>) instance creations (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9">15.9</a>); here <code>Number</code> is used as a type argument in the expression <code>new ArrayList&lt;Number&gt;()</code></p></li>
+<li><p>Array creations (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.10.1">15.10.1</a>); here the local variable <code>val</code> of method <code>gausser</code> is initialized by an array creation expression that creates an array of <code>double</code> with size 2</p></li>
+<li><p>Generic method (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.4">8.4.4</a>) or constructor (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.4">8.8.4</a>) invocations (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.12">15.12</a>); here the method <code>loop</code> calls itself with an explicit type argument <code>S</code></p></li>
+<li><p>Casts (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.16">15.16</a>); here the <code>return</code> statement of the method <code>ratio</code> uses the <code>float</code> type in a cast</p></li>
+<li><p>The <code>instanceof</code> operator (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.20.2">15.20.2</a>); here the <code>instanceof</code> operator tests whether <code>e</code> is assignment-compatible with the type <code>ArithmeticException</code></p></li>
+</ul>
+</div>
+<h2 id="jls-6">Chapter 6: Names</h2>
+<h3 id="jls-6.1">6.1 Declarations</h3>
+<p>A <em>declaration</em> introduces an entity into a program and includes an identifier (<a href="#jls-3.8">3.8</a>) that can be used in a name to refer to this entity. The identifier is constrained to be a type identifier when the entity being introduced is a class, interface, or type parameter.</p>
+<p>A declared entity is one of the following:</p>
+<ul>
+<li><p>A module, declared in a <code>module</code> declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-7.html#jls-7.7">7.7</a>)</p></li>
+<li><p>A package, declared in a <code>package</code> declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-7.html#jls-7.4">7.4</a>)</p></li>
+<li><p>An imported class or interface, declared in a single-type-import declaration or a type-import-on-demand declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-7.html#jls-7.5.1">7.5.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-7.html#jls-7.5.2">7.5.2</a>)</p></li>
+<li><p>An imported <code>static</code> member, declared in a single-static-import declaration or a static-import-on-demand declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-7.html#jls-7.5.3">7.5.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-7.html#jls-7.5.4">7.5.4</a>)</p></li>
+<li><p>A class, declared by a normal class declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1">8.1</a>)<strong>,</strong> <del>or</del> an enum declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.9">8.9</a>)<strong>, or a record declaration (<a href="#jls-8.10">8.10</a>)</strong></p></li>
+<li><p>An interface, declared by a normal interface declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.1">9.1</a>) or an annotation declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.6">9.6</a>)</p></li>
+<li><p>A type parameter, declared as part of the declaration of a generic class, interface, method, or constructor (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.2">8.1.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.1.2">9.1.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.4">8.4.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.4">8.8.4</a>)</p></li>
+<li><p>A member of a reference type (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.2">8.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.2">9.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.9.3">8.9.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.6">9.6</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-10.html#jls-10.7">10.7</a>), one of the following:</p>
+<ul>
+<li><p>A member class (<a href="#jls-8.5">8.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.5">9.5</a>)</p></li>
+<li><p>A member interface (<a href="#jls-8.5">8.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.5">9.5</a>)</p></li>
+<li><p>A field, one of the following:</p>
+<ul>
+<li><p>A field declared in a class (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.3">8.3</a>)</p></li>
+<li><p>A field declared in an interface (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.3">9.3</a>)</p></li>
+<li><p><strong>An implicitly declared field of a class corresponding to an enum constant (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.9.3">8.9.3</a>) or a record component (<a href="#jls-8.10.3">8.10.3</a>)</strong></p></li>
+<li><p>The field <code>length</code>, which is implicitly a member of every array type (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-10.html#jls-10.7">10.7</a>)</p></li>
+</ul></li>
+<li><p>A method, one of the following:</p>
+<ul>
+<li><p>A method (<code>abstract</code> or otherwise) declared in a class (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4">8.4</a>)</p></li>
+<li><p>A method (<code>abstract</code> or otherwise) declared in an interface (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.4">9.4</a>)</p></li>
+<li><p><strong>An implicitly declared accessor method corresponding to a record component (<a href="#jls-8.10.3">8.10.3</a>)</strong></p></li>
+</ul></li>
+</ul></li>
+<li><p>An enum constant (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.9.1">8.9.1</a>)</p></li>
+<li><p><strong>A record component (<a href="#jls-8.10.3">8.10.3</a>)</strong></p></li>
+<li><p>A formal parameter of a method of a class or interface (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.1">8.4.1</a>), a constructor of a class (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.1">8.8.1</a>), or a lambda expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.27.1">15.27.1</a>)</p></li>
+<li><p>An exception parameter of an exception handler declared in a <code>catch</code> clause of a <code>try</code> statement (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.20">14.20</a>)</p></li>
+<li><p>A local variable, one of the following:</p>
+<ul>
+<li><p>A local variable declared in a block (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.4">14.4</a>)</p></li>
+<li><p>A local variable declared in a <code>for</code> statement (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.14">14.14</a>)</p></li>
+</ul></li>
+<li><p>A local class or interface (<a href="#jls-14.3">14.3</a>), declared by one of the following:</p>
+<ul>
+<li><p>A normal class declaration</p></li>
+<li><p>An enum declaration</p></li>
+<li><p><strong>A record declaration</strong></p></li>
+<li><p>An interface declaration</p></li>
+</ul></li>
+</ul>
+<p>Constructors (<a href="#jls-8.8">8.8</a>) are also introduced by declarations <strong>(including implicit constructor declarations in record declarations (<a href="#jls-8.10.4">8.10.4</a>))</strong>, but use the name of the class in which they are declared rather than introducing a new name.</p>
+<p>...</p>
+<h3 id="jls-6.3">6.3 Scope of a Declaration</h3>
+<p>The <em>scope</em> of a declaration is the region of the program within which the entity declared by the declaration can be referred to using a simple name, provided it is not shadowed (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-6.html#jls-6.4.1">6.4.1</a>).</p>
+<p>A declaration is said to be <em>in scope</em> at a particular point in a program if and only if the declaration's scope includes that point.</p>
+<p>The scope of the declaration of an observable top level package (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-7.html#jls-7.4.3">7.4.3</a>) is all observable compilation units associated with modules to which the package is uniquely visible (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-7.html#jls-7.4.3">7.4.3</a>).</p>
+<p>The declaration of a package that is not observable is never in scope.</p>
+<p>The declaration of a subpackage is never in scope.</p>
+<p>The package <code>java</code> is always in scope.</p>
+<p>The scope of a type imported by a single-type-import declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-7.html#jls-7.5.1">7.5.1</a>) or a type-import-on-demand declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-7.html#jls-7.5.2">7.5.2</a>) is the module declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-7.html#jls-7.7">7.7</a>) and all the class and interface type declarations (<a href="#jls-7.6">7.6</a>) of the compilation unit in which the <code>import</code> declaration appears, as well as any annotations on the module declaration or package declaration of the compilation unit.</p>
+<p>The scope of a member imported by a single-static-import declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-7.html#jls-7.5.3">7.5.3</a>) or a static-import-on-demand declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-7.html#jls-7.5.4">7.5.4</a>) is the module declaration and all the class and interface type declarations of the compilation unit in which the <code>import</code> declaration appears, as well as any annotations on the module declaration or package declaration of the compilation unit.</p>
+<p>The scope of a top level type (<a href="#jls-7.6">7.6</a>) is all type declarations in the package in which the top level type is declared.</p>
+<p>The scope of a declaration of a member <em>m</em> declared in or inherited by a class type <em>C</em> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.6">8.1.6</a>) is the entire body of <em>C</em>, including any nested type declarations.</p>
+<p>The scope of a declaration of a member <em>m</em> declared in or inherited by an interface type <em>I</em> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.1.4">9.1.4</a>) is the entire body of <em>I</em>, including any nested type declarations.</p>
+<p>The scope of an enum constant <em>C</em> declared in an enum type <em>T</em> is the body of <em>T</em>, and any <code>case</code> label of a <code>switch</code> statement whose expression is of enum type <em>T</em> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.11">14.11</a>).</p>
+<p>The scope of a formal parameter of a method (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.1">8.4.1</a>), constructor (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.1">8.8.1</a>), or lambda expression ([15.27]) is the entire body of the method, constructor, or lambda expression.</p>
+<p>The scope of a class's type parameter (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.2">8.1.2</a>) is the type parameter section of the class declaration, the type parameter section of any superclass or superinterface of the class declaration, and the class body. <strong>If the class is a record class (<a href="#jls-8.10">8.10</a>), the scope of a record class's type parameter additionally includes the header of the record declaration (<a href="#jls-8.10.1">8.10.1</a>).</strong></p>
+<p>...</p>
+<h3 id="jls-6.5">6.5 Determining the Meaning of a Name</h3>
+<h4 id="jls-6.5.1">6.5.1 Syntactic Classification of a Name According to Context</h4>
+<p>A name is syntactically classified as a <em>ModuleName</em> in these contexts:</p>
+<ul>
+<li><p>In a <code>requires</code> directive in a module declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-7.html#jls-7.7.">7.7.1</a>)</p></li>
+<li><p>To the right of <code>to</code> in an <code>exports</code> or <code>opens</code> directive in a module declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-7.html#jls-7.7.2">7.7.2</a>)</p></li>
+</ul>
+<p>A name is syntactically classified as a <em>PackageName</em> in these contexts:</p>
+<ul>
+<li><p>To the right of <code>exports</code> or <code>opens</code> in a module declaration</p></li>
+<li><p>To the left of the &quot;<code>.</code>&quot; in a qualified <em>PackageName</em></p></li>
+</ul>
+<p>A name is syntactically classified as a <em>TypeName</em> in these contexts:</p>
+<ul>
+<li><p>To name a class or interface:</p>
+<ol type="1">
+<li><p>In a <code>uses</code> or <code>provides</code> directive in a module declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-7.html#jls-7.7.">7.7.1</a>)</p></li>
+<li><p>In a single-type-import declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-7.html#jls-7.5.1">7.5.1</a>)</p></li>
+<li><p>To the left of the <code>.</code> in a single-static-import declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-7.html#jls-7.5.3">7.5.3</a>)</p></li>
+<li><p>To the left of the <code>.</code> in a static-import-on-demand declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-7.html#jls-7.5.4">7.5.4</a>)</p></li>
+<li><p>To the left of the <code>(</code> in a constructor declaration (<a href="#jls-8.8">8.8</a>)</p></li>
+<li><p>After the <code>@</code> sign in an annotation (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.7">9.7</a>)</p></li>
+<li><p>To the left of <code>.class</code> in a class literal (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.8.2">15.8.2</a>)</p></li>
+<li><p>To the left of <code>.this</code> in a qualified <code>this</code> expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.8.4">15.8.4</a>)</p></li>
+<li><p>To the left of <code>.super</code> in a qualified superclass field access expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.11.2">15.11.2</a>)</p></li>
+<li><p>To the left of <code>.</code><em>Identifier</em> or <code>.super.</code><em>Identifier</em> in a qualified method invocation expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.12">15.12</a>)</p></li>
+<li><p>To the left of <code>.super::</code> in a method reference expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.13">15.13</a>)</p></li>
+</ol></li>
+<li><p>As the <em>Identifier</em> or dotted <em>Identifier</em> sequence that constitutes any <em>ReferenceType</em> (including a <em>ReferenceType</em> to the left of the brackets in an array type, or to the left of the &lt; in a parameterized type, or in a non-wildcard type argument of a parameterized type, or in an <code>extends</code> or <code>super</code> clause of a wildcard type argument of a parameterized type) in the <del>16</del> <strong>17</strong> contexts where types are used (<a href="#jls-4.11">4.11</a>):</p>
+<ol type="1">
+<li><p>In an <code>extends</code> or <code>implements</code> clause of a class declaration (<a href="#jls-8.1.4">8.1.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.5">8.1.5</a>, <a href="#jls-8.5">8.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.5">9.5</a>)</p></li>
+<li><p>In an <code>extends</code> clause of an interface declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.1.3">9.1.3</a>)</p></li>
+<li><p>The return type of a method (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4">8.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.4">9.4</a>) (including the type of an element of an annotation interface (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.6.1">9.6.1</a>))</p></li>
+<li><p>In the <code>throws</code> clause of a method or constructor (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.6">8.4.6</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.5">8.8.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.4">9.4</a>)</p></li>
+<li><p>In an <code>extends</code> clause of a type parameter declaration of a generic class, interface, method, or constructor (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.2">8.1.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.1.2">9.1.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.4">8.4.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.4">8.8.4</a>)</p></li>
+<li><p>The type in a field declaration of a class or interface (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.3">8.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.3">9.3</a>)</p></li>
+<li><p>The type in a formal parameter declaration of a method, constructor, or lambda expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.1">8.4.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.1">8.8.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.4">9.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.27.1">15.27.1</a>)</p></li>
+<li><p>The type of the receiver parameter of a method (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4">8.4</a>)</p></li>
+<li><p>The type in a local variable declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.4">14.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.14.1">14.14.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.14.2">14.14.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.20.3">14.20.3</a>)</p></li>
+<li><p>A type in an exception parameter declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.20">14.20</a>)</p></li>
+<li><p><strong>The type of a record component (<a href="#jls-8.10.1">8.10.1</a>)</strong></p></li>
+</ol>
+<p><del>11.</del> <strong>12.</strong> In an explicit type argument list to an explicit constructor invocation statement or class instance creation expression or method invocation expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.7.1">8.8.7.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9">15.9</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.12">15.12</a>)</p>
+<p><del>12.</del> <strong>13.</strong> In an unqualified class instance creation expression, either as the class type to be instantiated (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9">15.9</a>) or as the direct superclass or direct superinterface of an anonymous class to be instantiated (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9.5">15.9.5</a>)</p>
+<p><del>13.</del> <strong>14.</strong> The element type in an array creation expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.10.1">15.10.1</a>)</p>
+<p><del>14.</del> <strong>15.</strong> The type in the cast operator of a cast expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.16">15.16</a>)</p>
+<p><del>15.</del> <strong>16.</strong> The type that follows the <code>instanceof</code> relational operator (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.20.2">15.20.2</a>)</p>
+<p><del>16.</del> <strong>17.</strong> In a method reference expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.13">15.13</a>), as the reference type to search for a member method or as the class type or array type to construct.</p></li>
+</ul>
+<blockquote>
+<p>The extraction of a <em>TypeName</em> from the identifiers of a <em>ReferenceType</em> in the 16 contexts above is intended to apply recursively to all sub-terms of the <em>ReferenceType</em>, such as its element type and any type arguments.</p>
+<p>For example, suppose a field declaration uses the type <code>p.q.Foo[]</code>. The brackets of the array type are ignored, and the term <code>p.q.Foo</code> is extracted as a dotted sequence of <em>Identifiers</em> to the left of the brackets in an array type, and classified as a <em>TypeName</em>. A later step determines which of <code>p</code>, <code>q</code>, and <code>Foo</code> is a type name or a package name.</p>
+<p>As another example, suppose a cast operator uses the type <code>p.q.Foo&lt;? extends String&gt;</code>. The term <code>p.q.Foo</code> is again extracted as a dotted sequence of <em>Identifier</em> terms, this time to the left of the <code>&lt;</code> in a parameterized type, and classified as a <em>TypeName</em>. The term <code>String</code> is extracted as an <em>Identifier</em> in an <code>extends</code> clause of a wildcard type argument of a parameterized type, and classified as a <em>TypeName</em>.</p>
+</blockquote>
+<p>A name is syntactically classified as an <em>ExpressionName</em> in these contexts:</p>
+<ul>
+<li><p>As the qualifying expression in a qualified superclass constructor invocation (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.7.1">8.8.7.1</a>)</p></li>
+<li><p>As the qualifying expression in a qualified class instance creation expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9">15.9</a>)</p></li>
+<li><p>As the array reference expression in an array access expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.10.3">15.10.3</a>)</p></li>
+<li><p>As a <em>PostfixExpression</em> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.14">15.14</a>)</p></li>
+<li><p>As the left-hand operand of an assignment operator (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.26">15.26</a>)</p></li>
+<li><p>As a <em>VariableAccess</em> in a <code>try</code>-with-resources statement (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.20.3">14.20.3</a>)</p></li>
+</ul>
+<p>A name is syntactically classified as a <em>MethodName</em> in this context:</p>
+<ul>
+<li>Before the &quot;<code>(</code>&quot; in a method invocation expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.12">15.12</a>)</li>
+</ul>
+<p>A name is syntactically classified as a <em>PackageOrTypeName</em> in these contexts:</p>
+<ul>
+<li><p>To the left of the &quot;<code>.</code>&quot; in a qualified <em>TypeName</em></p></li>
+<li><p>In a type-import-on-demand declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-7.html#jls-7.5.2">7.5.2</a>)</p></li>
+</ul>
+<p>A name is syntactically classified as an <em>AmbiguousName</em> in these contexts:</p>
+<ul>
+<li><p>To the left of the &quot;<code>.</code>&quot; in a qualified <em>ExpressionName</em></p></li>
+<li><p>To the left of the rightmost <code>.</code> that occurs before the &quot;<code>(</code>&quot; in a method invocation expression</p></li>
+<li><p>To the left of the &quot;<code>.</code>&quot; in a qualified <em>AmbiguousName</em></p></li>
+<li><p>In the default value clause of an annotation element declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.6.2">9.6.2</a>)</p></li>
+<li><p>To the right of an &quot;<code>=</code>&quot; in an an element-value pair (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.7.1">9.7.1</a>)</p></li>
+<li><p>To the left of <code>::</code> in a method reference expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.13">15.13</a>)</p></li>
+</ul>
+<blockquote>
+<p>The effect of syntactic classification is to restrict certain kinds of entities to certain parts of expressions:</p>
+</blockquote>
+<blockquote>
+<ul>
+<li><p>The name of a field, parameter, or local variable may be used as an expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.14.1">15.14.1</a>).</p></li>
+<li><p>The name of a method may appear in an expression only as part of a method invocation expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.12">15.12</a>).</p></li>
+<li><p>The name of a class or interface may appear in an expression only as part of a class literal (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.8.2">15.8.2</a>), a qualified <code>this</code> expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.8.4">15.8.4</a>), a class instance creation expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9">15.9</a>), an array creation expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.10.1">15.10.1</a>), a cast expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.16">15.16</a>), an <code>instanceof</code> expression (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.20.2">15.20.2</a>), an enum constant (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.9">8.9</a>), or as part of a qualified name for a field or method.</p></li>
+<li><p>The name of a package may appear in an expression only as part of a qualified name for a class or interface.</p></li>
+</ul>
+</blockquote>
+<h2 id="jls-8">Chapter 8: Classes</h2>
+<p>Class declarations define new classes and describe how they are implemented (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1">8.1</a>).</p>
+<p>A <em>top level class</em> (<a href="#jls-7.6">7.6</a>) is a class that is declared at the top level of a compilation unit.</p>
+<p>A <em>nested class</em> is any class whose declaration occurs within the body of another class or interface. A nested class may be a <em>member class</em> (<a href="#jls-8.5">8.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.5">9.5</a>), a <em>local class</em> (<a href="#jls-14.3">14.3</a>), or an <em>anonymous class</em> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9.5">15.9.5</a>).</p>
+<p>An <em>inner class</em> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.3">8.1.3</a>) is a nested class that can refer to enclosing class instances, local variables, and type variables.</p>
+<p>An <em>enum class</em> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.9">8.9</a>) is a class declared with special syntax that defines a small set of named class instances.</p>
+<p><strong>A <em>record class</em> (<a href="#jls-8.10">8.10</a>) is a class declared with special syntax that defines a simple aggregate of values.</strong></p>
+<p>This chapter discusses the common semantics of all classes. Details that are specific to particular kinds of classes are discussed in the sections dedicated to these constructs.</p>
+<p>A class may be declared <code>abstract</code> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.1.1">8.1.1.1</a>) and must be declared abstract if it is incompletely implemented; such a class cannot be instantiated, but can be extended by subclasses. A class may be declared <code>final</code> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.1.2">8.1.1.2</a>), in which case it cannot have subclasses. A class can use access control (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-6.html#jls-6.6">6.6</a>) to prevent references to the class from other classes, interfaces, packages, or modules. Each class except <code>Object</code> is an extension of (that is, a subclass of) a single existing class (<a href="#jls-8.1.4">8.1.4</a>) and may implement interfaces (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.5">8.1.5</a>). Classes may be <em>generic</em> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.2">8.1.2</a>), that is, they may declare type variables whose bindings may differ among different instances of the class.</p>
+<p>Classes may be decorated with annotations (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.7">9.7</a>) just like any other kind of declaration.</p>
+<p>The body of a class declares members (fields, methods, classes, and interfaces), instance and static initializers, and constructors (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.6">8.1.6</a>). The scope (<a href="#jls-6.3">6.3</a>) of a member (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.2">8.2</a>) is the entire body of the declaration of the class to which the member belongs. Field, method, member class, member interface, and constructor declarations may include the access modifiers (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-6.html#jls-6.6">6.6</a>) <code>public</code>, <code>protected</code>, or <code>private</code>. The members of a class include both declared and inherited members (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.2">8.2</a>). Newly declared fields can hide fields declared in a superclass or superinterface. Newly declared member classes and interfaces can hide member classes and interfaces declared in a superclass or superinterface. Newly declared methods can hide, implement, or override methods declared in a superclass or superinterface.</p>
+<p>Field declarations (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.3">8.3</a>) describe class variables, which are incarnated once, and instance variables, which are freshly incarnated for each instance of the class. A field may be declared <code>final</code> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.3.1.2">8.3.1.2</a>), in which case it can be assigned to only once. Any field declaration may include an initializer.</p>
+<p>Member class declarations (<a href="#jls-8.5">8.5</a>) describe nested classes that are members of the surrounding class. Member classes may be <code>static</code> or they may be inner classes.</p>
+<p>Member interface declarations (<a href="#jls-8.5">8.5</a>) describe nested interfaces that are members of the surrounding class.</p>
+<p>Method declarations (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4">8.4</a>) describe code that may be invoked by method invocation expressions (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.12">15.12</a>). A class method is invoked relative to the class; an instance method is invoked with respect to some particular object that is an instance of a class. A method whose declaration does not indicate how it is implemented must be declared <code>abstract</code>. A method may be declared <code>final</code> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.3.3">8.4.3.3</a>), in which case it cannot be hidden or overridden. A method may be implemented by platform-dependent <code>native</code> code (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.3.4">8.4.3.4</a>). A <code>synchronized</code> method (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.3.6">8.4.3.6</a>) automatically locks an object before executing its body and automatically unlocks the object on return, as if by use of a <code>synchronized</code> statement (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.19">14.19</a>), thus allowing its activities to be synchronized with those of other threads (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-17.html">17</a>).</p>
+<p>Method names may be overloaded (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.9">8.4.9</a>).</p>
+<p>Instance initializers (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.6">8.6</a>) are blocks of executable code that may be used to help initialize an instance when it is created (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9">15.9</a>).</p>
+<p>Static initializers (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.7">8.7</a>) are blocks of executable code that may be used to help initialize a class.</p>
+<p>Constructors (<a href="#jls-8.8">8.8</a>) are similar to methods, but cannot be invoked directly by a method call; they are used to initialize new class instances. Like methods, they may be overloaded (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.8">8.8.8</a>).</p>
+<h3 id="jls-8.1">8.1 Class Declarations</h3>
+<p>A class declaration specifies a new class.</p>
+<p>There are <del>two</del> <strong>three</strong> kinds of class declarations: <em>normal class declarations</em><strong>,</strong> <del>and</del> <em>enum declarations</em><strong>, and <em>record declarations</em></strong>.</p>
+<dl>
+<dt><em>ClassDeclaration:</em></dt>
+<dd><em>NormalClassDeclaration</em>
+</dd>
+<dd><em>EnumDeclaration</em>
+</dd>
+<dd><strong><em>RecordDeclaration</em></strong>
+</dd>
+<dt><em>NormalClassDeclaration:</em></dt>
+<dd>{<em>ClassModifier</em>} <code>class</code> <em>TypeIdentifier</em> [<em>TypeParameters</em>]<br />
+[<em>ClassExtends</em>] [<em>ClassImplements</em>] <em>ClassBody</em>
+</dd>
+</dl>
+<p>A class is also implicitly declared by a <em>ClassInstanceCreationExpression</em> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9.5">15.9.5</a>) or <em>EnumConstant</em> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.9.1">8.9.1</a>) that ends with a class body.</p>
+<p>The <em>TypeIdentifier</em> in a class declaration specifies the name of the class.</p>
+<p>It is a compile-time error if a class has the same simple name as any of its enclosing classes or interfaces.</p>
+<p>The scope and shadowing of a class declaration is specified in <a href="#jls-6.3">6.3</a> and <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-6.html#jls-6.4">6.4</a>.</p>
+<h4 id="jls-8.1.1">8.1.1 Class Modifiers</h4>
+<h5 id="jls-8.1.1.4">8.1.1.4 <code>static</code> Classes</h5>
+<p>The <code>static</code> keyword indicates that a nested class is not an inner class (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.3">8.1.3</a>). The class has no immediately enclosing instance and cannot directly reference enclosing type variables (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-6.html#jls-6.5.5.1">6.5.5.1</a>); enclosing instance variables, local variables, formal parameters, or exception parameters (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-6.html#jls-6.5.6.1">6.5.6.1</a>); or enclosing instance methods (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.12.3">15.12.3</a>).</p>
+<p>A local class declaration may not use the <code>static</code> keyword (<a href="#jls-14.3">14.3</a>).</p>
+<p>Nested enum <strong>and record</strong> classes are implicitly declared <code>static</code>. A member enum <strong>or record</strong> class may redundantly specify the <code>static</code> modifier; a local enum <strong>or record</strong> class may not (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.9">8.9</a>).</p>
+<h4 id="jls-8.1.3">8.1.3 Inner Classes and Enclosing Instances</h4>
+<p>An <em>inner class</em> is a nested class that is not explicitly or implicitly declared <code>static</code>.</p>
+<p>An inner class may be a non-<code>static</code> member class (<a href="#jls-8.5">8.5</a>), a non-<code>static</code> local class (<a href="#jls-14.3">14.3</a>), or an anonymous class (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9.5">15.9.5</a>). Nested interfaces (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.1">9.1</a>), nested enum classes (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.9">8.9</a>), <strong>nested record classes (<a href="#jls-8.10">8.10</a>),</strong> member annotation interfaces (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.6">9.6</a>), and member classes of interfaces (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.5">9.5</a>) are implicitly <code>static</code>, so are never considered to be inner classes.</p>
+<p>...</p>
+<h4 id="jls-8.1.4">8.1.4 Superclasses</h4>
+<p>The optional <code>extends</code> clause in a normal class declaration specifies the <em>direct superclass type</em> of the current class.</p>
+<dl>
+<dt><em>ClassExtends:</em></dt>
+<dd><code>extends</code> <em>ClassType</em>
+</dd>
+</dl>
+<p>The <code>extends</code> clause must not appear in the definition of the class <code>Object</code>, or a compile-time error occurs, because it is the primordial class and has no direct superclass type.</p>
+<p>The <em>ClassType</em> must name an accessible class type (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-6.html#jls-6.6">6.6</a>), or a compile-time error occurs.</p>
+<p>It is a compile-time error if the <em>ClassType</em> names a class that is <code>final</code>, because <code>final</code> classes are not allowed to have subclasses (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.1.2">8.1.1.2</a>).</p>
+<p>It is a compile-time error if the <em>ClassType</em> names the class <code>Enum</code>, which can only be extended by an enum class (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.9">8.9</a>)<strong>, or the class <code>Record</code>, which can only be extended by a record class (<a href="#jls-8.10">8.10</a>)</strong>.</p>
+<p>If the <em>ClassType</em> has type arguments, it must denote a well-formed parameterized type (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-4.html#jls-4.5">4.5</a>), and none of the type arguments may be wildcard type arguments, or a compile-time error occurs.</p>
+<p>The direct superclass type of a class whose declaration lacks an <code>extends</code> clause is as follows:</p>
+<ul>
+<li><p>The class <code>Object</code> has no direct superclass type.</p></li>
+<li><p>For a class other than <code>Object</code> with a normal class declaration, the direct superclass type is <code>Object</code>.</p></li>
+<li><p>For an enum class <em>E</em>, the direct superclass type is <code>Enum&lt;</code><em>E</em><code>&gt;</code>.</p></li>
+<li><p>For a record class, the direct superclass type is <code>Record</code>.</p></li>
+<li><p>For an anonymous class, the direct superclass type is defined in <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9.5">15.9.5</a>.</p></li>
+</ul>
+<p>The <em>direct superclass</em> of a class is the class named by its direct superclass type. The direct superclass is the class from whose implementation the implementation of the current class is derived.</p>
+<p>The <em>superclass</em> relationship is the transitive closure of the direct superclass relationship. A class <em>A</em> is a superclass of class <em>C</em> if either of the following is true:</p>
+<ul>
+<li><p><em>A</em> is the direct superclass of <em>C</em></p></li>
+<li><p>Where a class <em>B</em> is the direct superclass of <em>C</em>, <em>A</em> is a superclass of <em>B</em>, applying this definition recursively.</p></li>
+</ul>
+<p>A class is said to be a <em>direct subclass</em> of its direct superclass, and a <em>subclass</em> of each of its superclasses.</p>
+<p>...</p>
+<h3 id="jls-8.5">8.5 Member Class and Interface Declarations</h3>
+<p>A <em>member class</em> is a class whose declaration is directly enclosed in the body of another class or interface declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.6">8.1.6</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.1.4">9.1.4</a>). A member class may be an enum class (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.9">8.9</a>) <strong>or a record class (<a href="#jls-8.10">8.10</a>)</strong>.</p>
+<p>A <em>member interface</em> is an interface whose declaration is directly enclosed in the body of another class or interface declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.6">8.1.6</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.1.4">9.1.4</a>). A member interface may be an annotation interface (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.6">9.6</a>).</p>
+<p>The accessibility of a member class or interface declaration in a class is specified by its access modifier, or by <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-6.html#jls-6.6">6.6</a> if lacking an access modifier.</p>
+<p>The scope and shadowing of a member class or interface is specified in <a href="#jls-6.3">6.3</a> and <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-6.html#jls-6.4">6.4</a>.</p>
+<p>If a class declares a member class or interface with a certain name, then the declaration of that class or interface is said to <em>hide</em> any and all accessible declarations of member classes and interfaces with the same name in superclasses and superinterfaces of the class.</p>
+<blockquote>
+<p>In this respect, hiding of member classes and interfaces is similar to hiding of fields (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.3">8.3</a>).</p>
+</blockquote>
+<p>A class inherits from its direct superclass and direct superinterfaces all the non-<code>private</code> member classes and interfaces of the superclass and superinterfaces that are both accessible to code in the class and not hidden by a declaration in the class.</p>
+<p>It is possible for a class to inherit more than one member class or interface with the same name, either from its superclass and superinterfaces or from its superinterfaces alone. Such a situation does not in itself cause a compile-time error. However, any attempt within the body of the class to refer to any such member class or interface by its simple name will result in a compile-time error, because the reference is ambiguous.</p>
+<p>There might be several paths by which the same member class or interface declaration is inherited from an interface. In such a situation, the member class or interface is considered to be inherited only once, and it may be referred to by its simple name without ambiguity.</p>
+<h3 id="jls-8.8">8.8 Constructor Declarations</h3>
+<p>A <em>constructor</em> is used in the creation of an object that is an instance of a class (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-12.html#jls-12.5">12.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9">15.9</a>).</p>
+<dl>
+<dt><em>ConstructorDeclaration:</em></dt>
+<dd>{<em>ConstructorModifier</em>} <em>ConstructorDeclarator</em> [<em>Throws</em>] <em>ConstructorBody</em>
+</dd>
+<dt><em>ConstructorDeclarator:</em></dt>
+<dd>[<em>TypeParameters</em>] <em>SimpleTypeName</em><br />
+<code>(</code> [<em>ReceiverParameter</em> <code>,</code>] [<em>FormalParameterList</em>] <code>)</code>
+</dd>
+<dt><em>SimpleTypeName:</em></dt>
+<dd><em>TypeIdentifier</em>
+</dd>
+</dl>
+<p>The rules in this section apply to constructors in all class declarations, including enum declarations <strong>and record declarations</strong>. However, special rules apply to enum declarations with regard to constructor modifiers, constructor bodies, and default constructors; these rules are stated in <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.9.2">8.9.2</a>. <strong>Special rules also apply to record declarations with regard to constructors, including a special compact declaration form; the details are given in <a href="#jls-8.10.4">8.10.4</a>.</strong></p>
+<p>The <em>SimpleTypeName</em> in the <em>ConstructorDeclarator</em> must be the simple name of the class that contains the constructor declaration, or a compile-time error occurs.</p>
+<p>In all other respects, a constructor declaration looks just like a method declaration that has no result (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.5">8.4.5</a>).</p>
+<p>Constructor declarations are not members. They are never inherited and therefore are not subject to hiding or overriding.</p>
+<p>Constructors are invoked by class instance creation expressions (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9">15.9</a>), by the conversions and concatenations caused by the string concatenation operator <code>+</code> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.18.1">15.18.1</a>), and by explicit constructor invocations from other constructors (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.7">8.8.7</a>). Access to constructors is governed by access modifiers (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-6.html#jls-6.6">6.6</a>), so it is possible to prevent class instantiation by declaring an inaccessible constructor (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.10">8.8.10</a>).</p>
+<p>Constructors are never invoked by method invocation expressions (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.12">15.12</a>).</p>
+<div class="example">
+<p>Example 8.8-1. Constructor Declarations</p>
+<pre><code>class Point {
+    int x, y;
+    Point(int x, int y) { this.x = x; this.y = y; }
+}</code></pre>
+</div>
+<h3 id="jls-8.10"><strong>8.10 Record Declarations</strong></h3>
+<div class="inserted">
+<p>A <em>record declaration</em> specifies a new <em>record class</em>, a special kind of class that defines a simple aggregate of values.</p>
+<dl>
+<dt><em>RecordDeclaration</em>:</dt>
+<dd>{<em>ClassModifier</em>} <code>record</code> <em>TypeIdentifier</em> [<em>TypeParameters</em>] <em>RecordHeader</em> [<em>ClassImplements</em>] <em>RecordBody</em>
+</dd>
+</dl>
+<p>The <em>TypeIdentifier</em> in the record declaration specifies the name of the record class.</p>
+<p>A record declaration may specify a top level record class (<a href="#jls-7.6">7.6</a>), a member record class (<a href="#jls-8.5">8.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.5">9.5</a>), or a local record class (<a href="#jls-14.3">14.3</a>).</p>
+<p>It is a compile-time error if a record declaration has the modifier <code>abstract</code>.</p>
+<p>A record declaration is implicitly <code>final</code>. It is permitted for the declaration of a record class to redundantly specify the <code>final</code> modifier.</p>
+</div>
+<div class="editorial">
+<p><a href="https://openjdk.java.net/jeps/360">JEP 360</a> proposes extending Java to support sealed classes. In this case, the following text would be added:</p>
+<p>It is a compile-time error if a record declaration has the modifier <code>sealed</code>.</p>
+</div>
+<div class="inserted">
+<p>A nested record declaration is implicitly <code>static</code>. It is permitted for the declaration of a member record class to redundantly specify the <code>static</code> modifier. A local record declaration may not redundantly specify the <code>static</code> modifier (<a href="#jls-14.3">14.3</a>).</p>
+<p>It is a compile-time error if the same keyword appears more than once as a modifier for a record declaration, or if a record declaration has more than one of the access modifiers <code>public</code>, <code>protected</code>, and <code>private</code> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-6.html#jls-6.6">6.6</a>).</p>
+<p>The direct superclass type of a record class is <code>Record</code> (<a href="#jls-8.1.4">8.1.4</a>).</p>
+<blockquote>
+<p>A record declaration has no <code>extends</code> clause, so it is not possible to explicitly declare that the direct superclass type of a record class is <code>Record</code>.</p>
+</blockquote>
+<blockquote>
+<p>The serialization mechanism treats instances of a record class differently than ordinary serializable or externalizable objects. In particular, a record object is deserialized using the canonical constructor (<a href="#jls-8.10.4">8.10.4</a>).</p>
+</blockquote>
+</div>
+<h4 id="jls-8.10.1"><strong>8.10.1 Record Components</strong></h4>
+<div class="inserted">
+<p>The header of a record declaration consists of a <em>record component list</em>, which is a possibly empty list of <em>record components</em>. Each record component consists of a type (optionally preceded by one or more annotations) and an identifier that specifies the name of the record component. If a record class has no record components, then the record header consists of an empty pair of parentheses.</p>
+<p>Each record component corresponds to an implicitly declared field and an accessor method (declared either explicitly or implicitly) of the record class (<a href="#jls-8.10.3">8.10.3</a>).</p>
+<dl>
+<dt><em>RecordHeader</em>:</dt>
+<dd><code>(</code> [ <em>RecordComponentList</em> ] <code>)</code>
+</dd>
+<dt><em>RecordComponentList</em>:</dt>
+<dd><em>RecordComponent</em> { <code>,</code> <em>RecordComponent</em> }
+</dd>
+<dt><em>RecordComponent</em>:</dt>
+<dd>{ <em>RecordComponentModifier</em> } <em>UnannType</em> <em>Identifier</em>
+</dd>
+<dd><em>VariableArityRecordComponent</em>
+</dd>
+<dt><em>VariableArityRecordComponent</em>:</dt>
+<dd>{ <em>RecordComponentModifier</em> } <em>UnannType</em> { <em>Annotation</em> } <code>...</code> <em>Identifier</em>
+</dd>
+<dt><em>RecordComponentModifier</em>:</dt>
+<dd><em>Annotation</em>
+</dd>
+</dl>
+<p>A record component may be a variable arity record component, indicated by an ellipsis following the type. At most one variable arity record component is permitted for a record type. It is a compile-time error if a variable arity record component appears anywhere in the list of record components except the last position.</p>
+<p>It is a compile-time error for a record declaration to declare two record components with the same name.</p>
+<p>It is a compile-time error for a record declaration to declare a record component with the name <code>clone</code>, <code>finalize</code>, <code>getClass</code>, <code>hashCode</code>, <code>notify</code>, <code>notifyAll</code>, <code>toString</code>, or <code>wait</code> (<a href="#jls-8.10.3">8.10.3</a>).</p>
+<p>The rules for annotation modifiers on a record component are specified in <a href="#jls-9.7.4">9.7.4</a>. Annotations on a record component of a record class may be propagated to members and constructors of the record class as specified in <a href="#jls-8.10.3">8.10.3</a>. An annotation on a record component only remains on the record component if its annotation interface is applicable in the record component context (<a href="#jls-9.6.4.1">9.6.4.1</a>).</p>
+<p>The declared type of a record component depends on whether it is a variable arity record component:</p>
+<ul>
+<li><p>If the record component is not a variable arity record component, then the declared type is denoted by <em>UnannType</em>.</p></li>
+<li><p>If the record component is a variable arity record component, then the declared type is an array type specified by <a href="#jls-10.2">10.2</a>.</p></li>
+</ul>
+<p>If the declared type of a variable arity record component has a non-reifiable element type (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-4.html#jls-4.7">4.7</a>), then a compile-time unchecked warning occurs for the declaration of the variable arity record component, unless the canonical constructor (<a href="#jls-8.10.4">8.10.4</a>) is annotated with <code>@SafeVarargs</code> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.6.4.7">9.6.4.7</a>) or the warning is suppressed by <code>@SuppressWarnings</code> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.6.4.5">9.6.4.5</a>).</p>
+</div>
+<h4 id="jls-8.10.2"><strong>8.10.2 Record Bodies</strong></h4>
+<div class="inserted">
+<p>The body of a record declaration may contain constructor and member declarations as well as static initializers.</p>
+<dl>
+<dt><em>RecordBody</em>:</dt>
+<dd><code>{</code> {<em>RecordBodyDeclaration</em>} <code>}</code>
+</dd>
+<dt><em>RecordBodyDeclaration</em>:</dt>
+<dd><em>ClassBodyDeclaration</em>
+</dd>
+<dd><em>CompactConstructorDeclaration</em>
+</dd>
+</dl>
+<blockquote>
+<p>The following productions from <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.6">8.1.6</a> are shown here for convenience:</p>
+</blockquote>
+<blockquote>
+<dl>
+<dt><em>ClassBodyDeclaration:</em></dt>
+<dd><em>ClassMemberDeclaration</em>
+</dd>
+<dd><em>InstanceInitializer</em>
+</dd>
+<dd><em>StaticInitializer</em>
+</dd>
+<dd><em>ConstructorDeclaration</em>
+</dd>
+<dt><em>ClassMemberDeclaration:</em></dt>
+<dd><em>FieldDeclaration</em>
+</dd>
+<dd><em>MethodDeclaration</em>
+</dd>
+<dd><em>ClassDeclaration</em>
+</dd>
+<dd><em>InterfaceDeclaration</em>
+</dd>
+<dd><code>;</code>
+</dd>
+</dl>
+</blockquote>
+<p>It is a compile-time error for the body of a record declaration to contain a non-<code>static</code> field declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.3.1.1">8.3.1.1</a>).</p>
+<p>It is a compile-time error for the body of a record declaration to contain a <code>native</code> method declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.3.4">8.4.3.4</a>).</p>
+<p>It is a compile-time error for the body of a record declaration to contain an instance initializer (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.6">8.6</a>).</p>
+</div>
+<h4 id="jls-8.10.3"><strong>8.10.3 Record Members</strong></h4>
+<div class="inserted">
+<p>A record class has for each record component appearing in the record component list an implicitly declared field with the same name as the record component and the same type as the declared type of the record component. This field is sometimes referred to as a <em>component field</em>. The field is declared <code>private</code> and <code>final</code>. The field is annotated with the annotations, if any, that appear on the corresponding record component and whose annotation interfaces are applicable in the field declaration context, or in type contexts, or both.</p>
+<p>In a record declaration, an <em>accessor method for a record component</em> is a method whose name is the same as the name of the given record component, and whose formal parameter list is empty.</p>
+<p>If an accessor method for a record component is declared explicitly, then it must satisfy the following:</p>
+<ul>
+<li><p>The return type of the accessor method must be the same as the declared type of the corresponding record component.</p></li>
+<li><p>The accessor method must not be generic (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.4">8.4.4</a>).</p></li>
+<li><p>The accessor method must be declared <code>public</code>.</p></li>
+<li><p>The accessor method must not be declared <code>static</code>.</p></li>
+<li><p>The accessor method must not have a <code>throws</code> clause.</p></li>
+<li><p>All other rules for a method in a normal class declaration must be satisfied (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4">8.4</a>).</p></li>
+</ul>
+<p>Otherwise, a compile-time error occurs.</p>
+<p>If an accessor method for a record component is not explicitly declared, then one is implicitly declared with the following properties:</p>
+<ul>
+<li><p>The name is the same as the name of the record component.</p></li>
+<li><p>The return type is the same as the declared type of the record component.</p></li>
+<li><p>It is not generic.</p></li>
+<li><p>It has an empty formal parameter list.</p></li>
+<li><p>It is declared <code>public</code>.</p></li>
+<li><p>It is annotated with the annotations, if any, that appear on the corresponding record component and whose annotation interfaces are applicable in the method declaration context, or in type contexts, or both. The rules for these annotation modifiers, if any, on the accessor method are the same as for a method declaration, and are specified in <a href="#jls-9.7.4">9.7.4</a> and <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.7.5">9.7.5</a>.</p></li>
+<li><p>The body of the implicitly declared accessor method simply returns the value of the corresponding component field.</p></li>
+</ul>
+<p>An implicitly declared accessor method must satisfy all the rules for a method in a normal class declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4">8.4</a>).</p>
+<blockquote>
+<p>A record class will thus have accessor methods for all record components appearing in the record component list.</p>
+<p>Annotations that appear on a record component are not propagated to an explicitly declared accessor method for that record component. This is in contrast to an implicitly declared accessor method which is annotated with the applicable annotations from the corresponding record component.</p>
+<p>Annotations that are propagated to an implicitly declared accessor method must result in a correctly annotated method. For example, in the following program, the implicitly declared accessor method would be annotated with the <code>@SafeVarargs</code> annotation, but this method is not correctly annotated as it is a fixed arity method (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.6.4.7">9.6.4.7</a>).</p>
+<pre><code>    record BadRecord(@SafeVarargs int x) {}  // Error!</code></pre>
+</blockquote>
+<p>An accessor method (explicitly or implicitly declared) may override or overload methods declared in superinterfaces of the record class.</p>
+<blockquote>
+<p>The restrictions on the record component names (<a href="#jls-8.10.1">8.10.1</a>) mean that no implicitly declared accessor method will have a signature that is override-equivalent with a non-<code>private</code> method of the class <code>Object</code>.</p>
+</blockquote>
+<p>All record classes provide an implementation of the <code>abstract</code> methods declared in the class <code>Record</code>. For each of the following methods, if a record class <em>R</em> does not explicitly declare a method with the same signature (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.2">8.4.2</a>), then the method is declared implicitly:</p>
+<ul>
+<li><p>A method <code>public final boolean equals(Object obj)</code> that returns <code>true</code> if and only if the argument <code>obj</code> is an instance of <em>R</em>, and the target record instance is equal to the argument record instance at every record component of <em>R</em>; otherwise <code>false</code> is returned.</p>
+<p>Equality of an instance <em>a</em> of a record class <em>R</em> with another instance <em>b</em> of the same record class at a record component <em>c</em> is as follows:</p>
+<ul>
+<li><p>If the type of the record component <em>c</em> is a reference type, equality is determined as follows: if the value of the component field <em>c</em> of both <em>a</em> and <em>b</em> is the null reference then <code>true</code> is returned; if the value of the component field <em>c</em> of either <em>a</em> or <em>b</em>, but not both, is the null reference then <code>false</code> is returned; otherwise equality is determined by invoking the <code>equals</code> method of the value of the component field <em>c</em> of <em>a</em>, with an argument that is the value of the component field <em>c</em> of <em>b</em>.</p></li>
+<li><p>If the type of the record component is a primitive type, equality is determined as if by invoking the <code>compare</code> method of the wrapper class (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-5.html#jls-5.1.7">5.1.7</a>) with the first argument given by the value of the component field <em>c</em> of <em>a</em>, and the second argument given by the value of the component field <em>c</em> of <em>b</em>; if the invocation of the <code>compare</code> method would return <code>0</code> then <code>true</code> is returned, and <code>false</code> is returned otherwise.</p></li>
+</ul>
+<blockquote>
+<p>It is important to note the direct access of the component fields in the implicit declaration of the <code>equals</code> method, rather than the use of the accessor methods.</p>
+</blockquote></li>
+<li><p>A method <code>public final int hashCode()</code> that returns a hash code value derived from the hash code values at every record component of <em>R</em>. The calculation of the hash code value should satisfy the contract of the <code>hashCode</code> method of the class <code>Object</code>.</p>
+<p>The hash code value of an instance <em>a</em> of a record class at a record component <em>c</em> is as follows:</p>
+<ul>
+<li><p>If the type of the record component <em>c</em> is a reference type, then the hash code value is determined by invoking the <code>hashCode</code> method of the value of the component field <em>c</em> of <em>a</em>.</p></li>
+<li><p>If the type of the record component <em>c</em> is a primitive type, then the hash code value is determined as if by invoking the <code>hashCode</code> method of the wrapper class of the object that results from boxing (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-5.html#jls-5.1.7">5.1.7</a>) the value of the component field <em>c</em> of <em>a</em>.</p></li>
+</ul></li>
+<li><p>A method <code>public final String toString()</code> that returns a string that is derived from the name of the record class and the names and string representations of every record component of <em>R</em>.</p>
+<p>The string representation of a record component <em>c</em> of an instance <em>a</em> of a record class is as follows:</p>
+<ul>
+<li><p>If the type of the record component <em>c</em> is a reference type, then the string representation is determined by invoking the <code>toString</code> method of the value of the component field <em>c</em> of <em>a</em>.</p></li>
+<li><p>If the type of the record component <em>c</em> is a primitive type, then the string representation is determined as if by invoking the <code>toString</code> method of the wrapper class of the object that results from boxing the value of the component field <em>c</em> of <em>a</em>.</p></li>
+</ul></li>
+</ul>
+<blockquote>
+<p>Consider a record class <code>R</code> that has components <code>c1</code>,...,<code>cn</code>, and an implicitly declared accessor method for every component, and an implicitly declared <code>equals</code> method. If an instance <code>r1</code> of <code>R</code> is copied in the following way:</p>
+<pre><code>R r2 = new R(r1.c1(), r1.c2(), ..., r1.cn());</code></pre>
+<p>then, assuming <code>r1</code> is not the null reference, it is always the case that the expression <code>r1.equals(r2)</code> will evaluate to <code>true</code>. Explicitly declared accessor and <code>equals</code> methods should respect this invariant. However, it is not generally possible for a compiler to check that explicitly declared methods respect this invariant. The following declaration of a record class is bad style because its accessor methods &quot;silently&quot; adjust the state of a record instance:</p>
+<pre><code>record SmallPoint(int x, int y) {
+  public int x() { return this.x &lt; 100 ? this.x : 100; }
+  public int y() { return this.y &lt; 100 ? this.y : 100; }
+}</code></pre>
+<p>Use of the wrapper classes in the implicitly declared <code>equals</code> method ensures it is reflexive and that it behaves consistently with <code>hashCode</code> for record classes that have floating point components.</p>
+</blockquote>
+<p>Record classes may declare or inherit other members, as described in <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.2">8.2</a>. All members of record classes, including the implicitly declared members, are subject to the usual rules for member declarations in a class (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.3">8.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4">8.4</a>, <a href="#jls-8.5">8.5</a>).</p>
+<blockquote>
+<p>For example, a record class can inherit default methods from its direct superinterfaces. Given the declarations:</p>
+<pre><code>interface Logging{
+    default void logAction() { ... }
+}
+
+record Point(int i, int j) implements Logging {}</code></pre>
+<p>Then the following code works as expected:</p>
+<pre><code>Point p = new Point(42,37);
+p.logAction();</code></pre>
+</blockquote>
+</div>
+<h4 id="jls-8.10.4"><strong>8.10.4 Record Constructor Declarations</strong></h4>
+<div class="inserted">
+<p>To support proper initialization of its record components, a record class does not implicitly declare a default constructor (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.9">8.8.9</a>). Instead, a record class has a <em>canonical constructor</em>, declared either explicitly or implicitly, that initializes all of the component fields.</p>
+<p>A record class <em>R</em> has a <em>derived constructor signature</em> that consists of the name <em>R</em>, no type parameters, and the formal parameter types derived from the record component list of <em>R</em> by taking the declared type of each record component.</p>
+<p>A record class <em>R</em> has a <em>derived formal parameter list</em> that is constructed by taking each record component in the record component list and deriving a formal parameter with the same name and the declared type of the record component.</p>
+<p>There are two ways to explicitly declare a canonical constructor in a record declaration: either by declaring a constructor with a particular signature, or by declaring a compact constructor.</p>
+<p>A constructor in a declaration of a record class <em>R</em> is said to be a canonical constructor if its signature is override-equivalent (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.2">8.4.2</a>) to the derived constructor signature of <em>R</em>.</p>
+<blockquote>
+<p>As a canonical constructor has a signature that is override-equivalent to the derived constructor signature of a record class, there can only be one explicitly declared canonical constructor.</p>
+</blockquote>
+<p>The access modifier of a canonical constructor for a record class must provide at least as much access as the record class, as follows:</p>
+<ul>
+<li><p>If the record class is <code>public</code>, then the canonical constructor must be <code>public</code>; otherwise, a compile-time error occurs.</p></li>
+<li><p>If the record class is <code>protected</code>, then the canonical constructor must be <code>protected</code> or <code>public</code>; otherwise, a compile-time error occurs.</p></li>
+<li><p>If the record class has package access, then the canonical constructor must not be <code>private</code>; otherwise, a compile-time error occurs.</p></li>
+<li><p>If the record class is <code>private</code>, then the canonical constructor may be declared with any accessibility.</p></li>
+</ul>
+<p>A constructor declaration that is not a compact constructor but is a canonical constructor must satisfy the following conditions:</p>
+<ul>
+<li><p>Each formal parameter in the formal parameter list of the constructor must have the same name and type as the corresponding record component. The formal parameter must be a variable arity parameter if and only if the corresponding record component is a variable arity record component.</p></li>
+<li><p>The constructor must not be generic (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.4">8.8.4</a>).</p></li>
+<li><p>The constructor must not have a <code>throws</code> clause.</p></li>
+<li><p>The body of the constructor must not contain an explicit constructor invocation statement (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.7.1">8.8.7.1</a>).</p></li>
+<li><p>All the rules for constructor declarations in a normal class declaration must be satisfied (<a href="#jls-8.8">8.8</a>).</p></li>
+</ul>
+<p>Otherwise, a compile-time error occurs.</p>
+<blockquote>
+<p>A consequence of these rules is that that the annotations on a record component can differ from the annotations on the corresponding formal parameter of an explicitly declared canonical constructor. For example, the following is valid:</p>
+<pre><code>  @Target(ElementType.TYPE_USE)
+  @interface DevAnnotation{ String value(); }
+
+  record R(@DevAnnotation(&quot;devA&quot;) String s) {
+      R(@DevAnnotation(&quot;devB&quot;) String s) {
+          // Explicitly declared canonical constructor
+          ...
+      }
+  }</code></pre>
+</blockquote>
+<p>The second way to explicitly declare a canonical constructor in a record declaration is to provide a <em>compact constructor declaration</em>, which is a special, succinct form of constructor declaration only available in a record declaration.</p>
+<dl>
+<dt><em>CompactConstructorDeclaration</em>:</dt>
+<dd>{ <em>ConstructorModifier</em> } <em>SimpleTypeName</em> <em>ConstructorBody</em>
+</dd>
+</dl>
+<p>In a record class <em>R</em>, the formal parameter list for a compact constructor declaration is implicitly declared and derived from each record component in the record component list as follows:</p>
+<ul>
+<li><p>If the record component is not a variable arity record component, then the derived formal parameter has the same name and the declared type of the record component.</p></li>
+<li><p>If the record component is a variable arity record component, then the derived formal parameter is a variable arity formal parameter (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.1">8.4.1</a>) with the same name and type as the variable arity record component.</p></li>
+</ul>
+<p>In both cases, the derived formal parameter is annotated with the annotations, if any, that appear on the corresponding record component whose annotation interfaces are applicable in the formal parameter context, or in type contexts, or both.</p>
+<blockquote>
+<p>This means that the compact constructor of a record class with a variable arity record component is a variable arity constructor (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.1">8.4.1</a>).</p>
+</blockquote>
+<blockquote>
+<p>Thus, given a record declaration with a record component named <em>c</em> and a compact constructor declaration, in the body of the compact constructor an occurrence of an unqualified name <em>c</em> denotes the implicit formal parameter <em>c</em>.</p>
+<p>In a record class <em>R</em>, the signature of a compact constructor declaration is the derived constructor signature of <em>R</em>.</p>
+</blockquote>
+<p>It is a compile-time error to declare more than one compact constructor in a record class.</p>
+<blockquote>
+<p>The rules concerning signatures of constructors in class declarations (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.2">8.8.2</a>) mean that it is also a compile-time error if a record declaration contains a compact constructor declaration and a standard constructor declaration that is a canonical constructor. A compact constructor is a canonical constructor.</p>
+</blockquote>
+<p>A compact constructor declaration must satisfy all of the following conditions; otherwise a compile-time error occurs.</p>
+<ul>
+<li><p>The body of a compact constructor must not contain a <code>return</code> statement (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.17">14.17</a>).</p></li>
+<li><p>The body of a compact constructor must not contain an explicit constructor invocation statement (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.7.1">8.8.7.1</a>).</p></li>
+<li><p>All the other rules for a constructor in a normal class declaration must be satisfied (<a href="#jls-8.8">8.8</a>), except the requirement that the component fields of the record class must be definitely assigned and moreover not definitely unassigned at the end of the compact constructor (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.3.1.2">8.3.1.2</a>).</p></li>
+</ul>
+<p>It is a compile-time error if an assignment occurs (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-16.html">16</a>) to a component field of the record class in the body of the compact constructor.</p>
+<p>All component fields of the record class are implicitly initialized to the value of the corresponding formal parameter after the body of the compact constructor. These component fields are implicitly initialized in the order that they are declared in the record component list.</p>
+<blockquote>
+<p>The intention of a compact constructor declaration is that only validation and/or normalization code need be given in the constructor body; the remaining initialization code is supplied by the compiler. Here is a simple example:</p>
+<pre><code>record Rational(int num, int denom) { 
+    Rational {
+        int gcd = gcd(num, denom);
+        num /= gcd;
+        denom /= gcd;
+    }
+}</code></pre>
+<p>This declaration is equivalent to the following declaration:</p>
+<pre><code>record Rational(int num, int denom) { 
+    Rational(int num, int demon) {
+        int gcd = gcd(num, denom);
+        num /= gcd;
+        denom /= gcd;
+        this.num = num;
+        this.denom = denom;
+    }
+}</code></pre>
+</blockquote>
+<p>In the declaration of a record class <em>R</em>, if a canonical constructor is not explicitly declared, then one is implicitly declared with the following properties:</p>
+<ul>
+<li><p>The signature of the implicitly declared canonical constructor has no type parameters, and has a formal parameter list derived as follows from each record component in the record component list:</p>
+<ul>
+<li><p>If the record component is a variable arity record component, then a variable arity formal parameter is derived with the same name and component type as the record component.</p></li>
+<li><p>If the record component is not a variable arity record component, then a formal parameter that is not a variable arity parameter is derived with the same name and same type as the record component.</p></li>
+</ul>
+<p>In both cases, the derived formal parameter is annotated with the annotations, if any, that appear on the corresponding record component whose annotation interfaces are applicable in the formal parameter context, or in type contexts, or both.</p></li>
+<li><p>The implicitly declared canonical constructor has the same access modifier as the record class <em>R</em>, unless the record class lacks an access modifier, in which case the canonical constructor has package access (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-6.html#jls-6.6">6.6</a>).</p></li>
+<li><p>The implicitly declared canonical constructor does not have a <code>throws</code> clause.</p></li>
+<li><p>The body of the implicitly declared canonical constructor initializes each component field of the record class with the corresponding formal parameter in the order that they appear in the record component list.</p></li>
+</ul>
+<p>An implicitly declared canonical constructor must satisfy all the rules for constructor declarations in a normal class declaration (<a href="#jls-8.8">8.8</a>).</p>
+<p>If a record declaration contains declarations of constructors that are not canonical constructors then they must satisfy the following:</p>
+<ul>
+<li>The constructor body must start with an alternate constructor invocation (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.7.1">8.8.7.1</a>).</li>
+</ul>
+<p>Otherwise, a compile-time error occurs.</p>
+</div>
+<h2 id="jls-9">Chapter 9: Interfaces</h2>
+<h3 id="jls-9.6">9.6 Annotation Interfaces</h3>
+<h4 id="jls-9.6.4">9.6.4 Predefined Annotation Interfaces</h4>
+<h5 id="jls-9.6.4.1">9.6.4.1 <code>@Target</code></h5>
+<p>An annotation of type <code>java.lang.annotation.Target</code> is used on the declaration of an annotation interface <em>T</em> to specify the contexts in which <em>T</em> is <em>applicable</em>. <code>java.lang.annotation.Target</code> has a single element, <code>value</code>, of type <code>java.lang.annotation.ElementType[]</code>, to specify contexts.</p>
+<p>Annotation interfaces may be applicable in <em>declaration contexts</em>, where annotations apply to declarations, or in <em>type contexts</em>, where annotations apply to types used in declarations and expressions.</p>
+<p>There are <del>nine</del> <strong>ten</strong> declaration contexts, each corresponding to an enum constant of <code>java.lang.annotation.ElementType</code>:</p>
+<ol type="1">
+<li><p>Module declarations (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-7.html#jls-7.7">7.7</a>)</p>
+<p>Corresponds to <code>java.lang.annotation.ElementType.MODULE</code></p></li>
+<li><p>Package declarations (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-7.html#jls-7.4.1">7.4.1</a>)</p>
+<p>Corresponds to <code>java.lang.annotation.ElementType.PACKAGE</code></p></li>
+<li><p>Type declarations: class, interface, enum, <strong>record,</strong> and annotation declarations (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.1">8.1.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.1.1">9.1.1</a>, <a href="#jls-8.5">8.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.5">9.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.9">8.9</a>, <strong><a href="#jls-8.10">8.10</a>,</strong> <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.6">9.6</a>)</p>
+<p>Corresponds to <code>java.lang.annotation.ElementType.TYPE</code></p>
+<p>Additionally, annotation declarations correspond to <code>java.lang.annotation.ElementType.ANNOTATION_TYPE</code></p></li>
+<li><p>Method declarations (including elements of annotation interfaces) (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.3">8.4.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.4">9.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.6.1">9.6.1</a>)</p>
+<p>Corresponds to <code>java.lang.annotation.ElementType.METHOD</code></p></li>
+<li><p>Constructor declarations (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.3">8.8.3</a>)</p>
+<p>Corresponds to <code>java.lang.annotation.ElementType.CONSTRUCTOR</code></p></li>
+<li><p>Type parameter declarations of generic classes, interfaces, methods, and constructors (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.2">8.1.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.1.2">9.1.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.4">8.4.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.4">8.8.4</a>)</p>
+<p>Corresponds to <code>java.lang.annotation.ElementType.TYPE_PARAMETER</code></p></li>
+<li><p>Field declarations (including enum constants) (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.3.1">8.3.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.3">9.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.9.1">8.9.1</a>)</p>
+<p>Corresponds to <code>java.lang.annotation.ElementType.FIELD</code></p></li>
+<li><p>Formal and exception parameter declarations (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.1">8.4.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.4">9.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.20">14.20</a>)</p>
+<p>Corresponds to <code>java.lang.annotation.ElementType.PARAMETER</code></p></li>
+<li><p>Local variable declarations (including loop variables of <code>for</code> statements and resource variables of <code>try</code>-with-resources statements) (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.4">14.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.14.1">14.14.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.14.2">14.14.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.20.3">14.20.3</a>)</p>
+<p>Corresponds to <code>java.lang.annotation.ElementType.LOCAL_VARIABLE</code></p></li>
+<li><p><strong>Record component declarations (<a href="#jls-8.10.1">8.10.1</a>)</strong></p>
+<p><strong>Corresponds to <code>java.lang.annotation.ElementType.RECORD_COMPONENT</code></strong></p></li>
+</ol>
+<p>There are <del>16</del> <strong>17</strong> type contexts (<a href="#jls-4.11">4.11</a>), all represented by the enum constant <code>TYPE_USE</code> of <code>java.lang.annotation.ElementType</code>.</p>
+<p>It is a compile-time error if the same enum constant appears more than once in the <code>value</code> element of an annotation of type <code>java.lang.annotation.Target</code>.</p>
+<p>If an annotation of type <code>java.lang.annotation.Target</code> is not present on the declaration of an annotation interface <em>T</em>, then <em>T</em> is applicable in all <del>nine</del> <strong>ten</strong> declaration contexts and in all <del>16</del> <strong>17</strong> type contexts.</p>
+<h5 id="jls-9.6.4.4">9.6.4.4 <code>@Override</code></h5>
+<p>Programmers occasionally overload a method declaration when they mean to override it, leading to subtle problems. The annotation interface <code>Override</code> supports early detection of such problems.</p>
+<blockquote>
+<p>The classic example concerns the <code>equals</code> method. Programmers write the following in class <code>Foo</code>:</p>
+<pre><code>public boolean equals(Foo that) { ... }</code></pre>
+<p>when they mean to write:</p>
+<pre><code>public boolean equals(Object that) { ... }</code></pre>
+<p>This is perfectly legal, but class <code>Foo</code> inherits the <code>equals</code> implementation from <code>Object</code>, which can cause some subtle bugs.</p>
+</blockquote>
+<p><del>If a method declaration in class or interface <em>T</em> is annotated with <code>@Override</code>, but the method does not override from <em>T</em> a method declared in a supertype of <em>T</em> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.8.1">8.4.8.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.4.1.1">9.4.1.1</a>), or is not override-equivalent to a <code>public</code> method of <code>Object</code> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-4.html#jls-4.3.2">4.3.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.2">8.4.2</a>), then a compile-time error occurs.</del></p>
+<div class="inserted">
+<p>It is a compile-time error for a method declaration in a class or interface <em>T</em> to be annotated with <code>@Override</code> unless one of the following conditions holds:</p>
+<ul>
+<li><p>the method overrides from <em>T</em> a method declared in a supertype of <em>T</em> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.8.1">8.4.8.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.4.1.1">9.4.1.1</a>)</p></li>
+<li><p>the method is override-equivalent to a <code>public</code> method of <code>Object</code> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-4.html#jls-4.3.2">4.3.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.2">8.4.2</a>)</p></li>
+<li><p><em>T</em> is a record class (<a href="#jls-8.10">8.10</a>), and the method is an accessor method for a record component of <em>T</em> (<a href="#jls-8.10.3">8.10.3</a>).</p></li>
+</ul>
+</div>
+<blockquote>
+<p>This behavior differs from Java SE 5.0, where <code>@Override</code> only caused a compile-time error if applied to a method that implemented a method from a superinterface that was not also present in a superclass.</p>
+</blockquote>
+<blockquote>
+<p>The clause about overriding a <code>public</code> method is motivated by use of <code>@Override</code> in an interface. Consider the following declarations:</p>
+<pre><code>class Foo     { @Override public int hashCode() {..} }
+interface Bar { @Override int hashCode(); }</code></pre>
+<p>The use of <code>@Override</code> in the class declaration is legal by the first clause, because <code>Foo.hashCode</code> overrides from <code>Foo</code> the method <code>Object.hashCode</code>.</p>
+<p>For the interface declaration, consider that while an interface does not have <code>Object</code> as a supertype, an interface does have <code>public</code> <code>abstract</code> members that correspond to the <code>public</code> members of <code>Object</code> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.2">9.2</a>). If an interface chooses to declare them explicitly (that is, to declare members that are override-equivalent to <code>public</code> methods of <code>Object</code>), then the interface is deemed to override them, and use of <code>@Override</code> is allowed.</p>
+<p>However, consider an interface that attempts to use <code>@Override</code> on a <code>clone</code> method: (<code>finalize</code> could also be used in this example)</p>
+<pre><code>interface Quux { @Override Object clone(); }</code></pre>
+<p>Because <code>Object.clone</code> is not <code>public</code>, there is no member called <code>clone</code> implicitly declared in <code>Quux</code>. Therefore, the explicit declaration of <code>clone</code> in <code>Quux</code> is not deemed to &quot;implement&quot; any other method, and it is erroneous to use <code>@Override</code>. (The fact that <code>Quux.clone</code> is <code>public</code> is not relevant.)</p>
+<p>In contrast, a class declaration that declares <code>clone</code> is simply overriding <code>Object.clone</code>, so is able to use <code>@Override</code>:</p>
+<pre><code>class Beep { @Override protected Object clone() {..} }</code></pre>
+<div class="inserted">
+<p>The <code>@Override</code> annotation has a special meaning in a record declaration, where it can be used to specify that a method declaration is an accessor method (<a href="#jls-8.10.3">8.10.3</a>) for a record component. Consider the following declaration:</p>
+<pre><code>record R(int x) {
+   @Override
+   public int x() { 
+       return Math.abs(x);
+   }
+   ...
+}</code></pre>
+<p>The <code>@Override</code> annotation on the accessor method <code>x</code> ensures that if the record component <code>x</code> is modified or removed, then the corresponding accessor method must be modified or removed too.</p>
+</div>
+</blockquote>
+<h3 id="jls-9.7">9.7 Annotations</h3>
+<h4 id="jls-9.7.4">9.7.4 Where Annotations May Appear</h4>
+<p>A <em>declaration annotation</em> is an annotation that applies to a declaration, and whose annotation interface is applicable in the declaration context (<a href="#jls-9.6.4.1">9.6.4.1</a>) represented by that declaration; or an annotation that applies to a class, interface, or type parameter declaration, and whose annotation interface is applicable in type contexts (<a href="#jls-4.11">4.11</a>).</p>
+<p>A <em>type annotation</em> is an annotation that applies to a type (or any part of a type), and whose annotation interface is applicable in type contexts.</p>
+<blockquote>
+<p>For example, given the field declaration:</p>
+<pre><code>@Foo int f;</code></pre>
+<p><code>@Foo</code> is a declaration annotation on <code>f</code> if <code>Foo</code> is meta-annotated by <code>@Target(ElementType.FIELD)</code>, and a type annotation on <code>int</code> if <code>Foo</code> is meta-annotated by <code>@Target(ElementType.TYPE_USE)</code>. It is possible for <code>@Foo</code> to be both a declaration annotation and a type annotation simultaneously.</p>
+<p>Type annotations can apply to an array type or any component type thereof (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-10.html#jls-10.1">10.1</a>). For example, assuming that <code>A</code>, <code>B</code>, and <code>C</code> are annotation interfaces meta-annotated with <code>@Target(ElementType.TYPE_USE)</code>, then given the field declaration:</p>
+<pre><code>@C int @A [] @B [] f;</code></pre>
+<p><code>@A</code> applies to the array type <code>int[][]</code>, <code>@B</code> applies to its component type <code>int[]</code>, and <code>@C</code> applies to the element type <code>int</code>. For more examples, see <a href="#jls-10.2">10.2</a>.</p>
+<p>An important property of this syntax is that, in two declarations that differ only in the number of array levels, the annotations to the left of the type refer to the same type. For example, <code>@C</code> applies to the type <code>int</code> in all of the following declarations:</p>
+<pre><code>@C int f;
+@C int[] f;
+@C int[][] f;</code></pre>
+</blockquote>
+<blockquote>
+<p>It is customary, though not required, to write declaration annotations before all other modifiers, and type annotations immediately before the type to which they apply.</p>
+</blockquote>
+<p>It is possible for an annotation to appear at a syntactic location in a program where it could plausibly apply to a declaration, or a type, or both. This can happen in any of the <del>five</del> <strong>six</strong> declaration contexts where modifiers immediately precede the type of the declared entity:</p>
+<ul>
+<li><p>Method declarations (including elements of annotation interfaces)</p></li>
+<li><p>Constructor declarations</p></li>
+<li><p>Field declarations (including enum constants)</p></li>
+<li><p>Formal and exception parameter declarations</p></li>
+<li><p>Local variable declarations (including loop variables of <code>for</code> statements and resource variables of <code>try</code>-with-resources statements)</p></li>
+<li><p><strong>Record component declarations</strong></p></li>
+</ul>
+<p>The grammar of the Java programming language unambiguously treats annotations at these locations as modifiers for a declaration (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.3">8.3</a>), but that is purely a syntactic matter. Whether an annotation applies to the declaration or to the type of the declared entity - and thus, whether the annotation is a <em>declaration annotation</em> or a <em>type annotation</em> - depends on the applicability of the annotation's interface:</p>
+<ul>
+<li><p>If the annotation's interface is applicable in the declaration context corresponding to the declaration, and not in type contexts, then the annotation is deemed to apply only to the declaration.</p></li>
+<li><p>If the annotation's interface is applicable in type contexts, and not in the declaration context corresponding to the declaration, then the annotation is deemed to apply only to the type which is closest to the annotation.</p></li>
+<li><p>If the annotation's interface is applicable in the declaration context corresponding to the declaration <em>and</em> in type contexts, then the annotation is deemed to apply to both the declaration <em>and</em> the type which is closest to the annotation.</p></li>
+</ul>
+<p>In the second and third cases above, the type which is <em>closest</em> to the annotation is determined as follows:</p>
+<ul>
+<li><p>If the annotation appears before a <code>void</code> method declaration or a local variable declaration that uses <code>var</code> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.4">14.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.14.2">14.14.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.20.3">14.20.3</a>), then there is no closest type. If the annotation's interface is deemed to apply only to the type which is closest to the annotation, a compile-time error occurs.</p></li>
+<li><p>If the annotation appears before a constructor declaration, then the closest type is the type of the newly constructed object. The type of the newly constructed object is the fully qualified name of the type immediately enclosing the constructor declaration. Within that fully qualified name, the annotation applies to the simple type name indicated by the constructor declaration.</p></li>
+<li><p>In all other cases, the closest type is the type written in source code for the declared entity; if that type is an array type, then the element type is deemed to be closest to the annotation.</p>
+<blockquote>
+<p>For example, in the field declaration <code>@Foo public static String f;</code>, the type which is closest to <code>@Foo</code> is <code>String</code>. (If the type of the field declaration had been written as <code>java.lang.String</code>, then <code>java.lang.String</code> would be the type closest to <code>@Foo</code>, and later rules would prohibit a type annotation from applying to the package name <code>java</code>.) In the generic method declaration <code>@Foo &lt;T&gt; int[] m() {...}</code>, the type written for the declared entity is <code>int[]</code>, so <code>@Foo</code> applies to the element type <code>int</code>.</p>
+</blockquote>
+<blockquote>
+<p>Local variable declarations which do not use <code>var</code> are similar to formal parameter declarations of lambda expressions, in that both allow declaration annotations and type annotations in source code, but only the type annotations can be stored in the <code>class</code> file.</p>
+</blockquote></li>
+</ul>
+<p>It is a compile-time error if an annotation of interface <em>A</em> is syntactically a modifier for:</p>
+<ul>
+<li><p>a module declaration, but <em>A</em> is not applicable to module declarations.</p></li>
+<li><p>a package declaration, but <em>A</em> is not applicable to package declarations.</p></li>
+<li><p>a class or interface declaration, but <em>A</em> is not applicable to type declarations or type contexts; or in the case of an annotation declaration, <em>A</em> is not applicable to annotation type declarations or type declarations or type contexts.</p></li>
+<li><p>a method declaration (including an element of an annotation interface), but <em>A</em> is not applicable to method declarations or type contexts.</p></li>
+<li><p>a constructor declaration, but <em>A</em> is not applicable to constructor declarations or type contexts.</p></li>
+<li><p>a type parameter declaration of a generic class, interface, method, or constructor, but <em>A</em> is not applicable to type parameter declarations or type contexts.</p></li>
+<li><p>a field declaration or an enum constant, but <em>A</em> is not applicable to field declarations or type contexts.</p></li>
+<li><p>a formal or exception parameter declaration, but <em>A</em> is not applicable to either formal and exception parameter declarations or type contexts.</p></li>
+<li><p>a receiver parameter, but <em>A</em> is not applicable to type contexts.</p></li>
+<li><p>a local variable declaration (including a loop variable of a <code>for</code> statement or a resource variable of a <code>try</code>-with-resources statement), but <em>A</em> is not applicable to local variable declarations or type contexts.</p></li>
+<li><p><strong>a record component but <em>A</em> is not applicable to record component declarations, field declarations, method declarations, formal and exception parameter declarations, or type contexts.</strong></p></li>
+</ul>
+<blockquote>
+<p><del>Five</del> <strong>Six</strong> of these <del>nine</del> <strong>eleven</strong> clauses mention &quot;... or type contexts&quot; because they characterize the <del>five</del> <strong>six</strong> syntactic locations where an annotation could plausibly apply either to a declaration or to the type of a declared entity. Furthermore, two of the <del>nine</del> <strong>eleven</strong> clauses - for class and interface declarations, and for type parameter declarations - mention &quot;... or type contexts&quot; because it may be convenient to apply an annotation whose interface is meta-annotated with <code>@Target(ElementType.TYPE_USE)</code> (thus, applicable in type contexts) to a class, interface, or type parameter declaration.</p>
+</blockquote>
+<p>A type annotation is <em>admissible</em> if both of the following are true:</p>
+<ul>
+<li><p>The simple name to which the annotation is closest is classified as a <em>TypeName</em>, not a <em>PackageName</em>.</p></li>
+<li><p>If the simple name to which the annotation is closest is followed by &quot;<code>.</code>&quot; and another <em>TypeName</em> - that is, the annotation appears as <code>@Foo T.U</code> - then <code>U</code> denotes an inner class of <code>T</code>.</p></li>
+</ul>
+<blockquote>
+<p>The intuition behind the second clause is that if <code>Outer.this</code> is legal in a nested class enclosed by <code>Outer</code>, then <code>Outer</code> may be annotated because it represents the type of some object at run time. On the other hand, if <code>Outer.this</code> is not legal - because the class where it appears has no enclosing instance of <code>Outer</code> at run time - then <code>Outer</code> may not be annotated because it is logically just a name, akin to components of a package name in a fully qualified type name.</p>
+</blockquote>
+<blockquote>
+<p>For example, in the following program, it is not possible to write <code>A.this</code> in the body of <code>B</code>, as <code>B</code> has no lexically enclosing instances (8.5.1). Therefore, it is not possible to apply <code>@Foo</code> to <code>A</code> in the type <code>A.B</code>, because <code>A</code> is logically just a name, not a type.</p>
+<pre><code>@Target(ElementType.TYPE_USE)
+@interface Foo {}
+
+class Test {
+  class A {
+    static class B {}
+  }
+
+  @Foo A.B x;  // Illegal 
+}</code></pre>
+<p>On the other hand, in the following program, it is possible to write <code>C.this</code> in the body of <code>D</code>. Therefore, it is possible to apply <code>@Foo</code> to <code>C</code> in the type <code>C.D</code>, because <code>C</code> represents the type of some object at run time.</p>
+<pre><code>@Target(ElementType.TYPE_USE)
+@interface Foo {}
+
+class Test {
+  static class C {
+    class D {}
+  }
+
+  @Foo C.D x;  // Legal 
+}</code></pre>
+<p>Finally, note that the second clause looks only one level deeper in a qualified type. This is because a <code>static</code> class may only be nested in a top level class or another <code>static</code> nested class. It is not possible to write a nest like:</p>
+<pre><code>@Target(ElementType.TYPE_USE)
+@interface Foo {}
+
+class Test {
+  class E {
+    class F {
+      static class G {}
+    }
+  }
+
+  @Foo E.F.G x;
+}</code></pre>
+<p>Assume for a moment that the nest was legal. In the type of field <code>x</code>, <code>E</code> and <code>F</code> would logically be names qualifying <code>G</code>, as <code>E.F.this</code> would be illegal in the body of <code>G</code>. Then, <code>@Foo</code> should not be legal next to <code>E</code>. Technically, however, <code>@Foo</code> would be admissible next to <code>E</code> because the next deepest term <code>F</code> denotes an inner class; but this is moot as the class nest is illegal in the first place.</p>
+</blockquote>
+<p>It is a compile-time error if an annotation of interface <em>A</em> applies to the outermost level of a type in a type context, and <em>A</em> is not applicable in type contexts or the declaration context (if any) which occupies the same syntactic location.</p>
+<p>It is a compile-time error if an annotation of interface <em>A</em> applies to a part of a type (that is, not the outermost level) in a type context, and <em>A</em> is not applicable in type contexts.</p>
+<p>It is a compile-time error if an annotation of interface <em>A</em> applies to a type (or any part of a type) in a type context, and <em>A</em> is applicable in type contexts, but the annotation is not admissible.</p>
+<blockquote>
+<p>For example, assume an annotation interface <code>TA</code> which is meta-annotated with just <code>@Target(ElementType.TYPE_USE)</code>. The terms <code>@TA java.lang.Object</code> and <code>java.@TA lang.Object</code> are illegal because the simple name to which <code>@TA</code> is closest is classified as a package name. On the other hand, <code>java.lang.@TA Object</code> is legal.</p>
+</blockquote>
+<blockquote>
+<p>Note that the illegal terms are illegal &quot;everywhere&quot;. The ban on annotating package names applies broadly: to locations which are solely type contexts, such as <code>class ... extends @TA java.lang.Object {...}</code>, and to locations which are both declaration and type contexts, such as <code>@TA java.lang.Object f;</code>. (There are no locations which are solely declaration contexts where a package name could be annotated, as class, package, and type parameter declarations use only simple names.)</p>
+</blockquote>
+<blockquote>
+<p>If <code>TA</code> is additionally meta-annotated with <code>@Target(ElementType.FIELD)</code>, then the term <code>@TA java.lang.Object</code> is legal in locations which are both declaration and type contexts, such as a field declaration <code>@TA java.lang.Object f;</code>. Here, <code>@TA</code> is deemed to apply to the declaration of <code>f</code> (and not to the type <code>java.lang.Object</code>) because <code>TA</code> is applicable in the field declaration context.</p>
+</blockquote>
+<h2 id="jls-10">Chapter 10: Arrays</h2>
+<h3 id="jls-10.2">10.2 Array Variables</h3>
+<p>A variable of array type holds a reference to an object. Declaring a variable of array type does not create an array object or allocate any space for array components. It creates only the variable itself, which can contain a reference to an array. However, the initializer part of a declarator (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.3">8.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.3">9.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.4.1">14.4.1</a>) may create an array, a reference to which then becomes the initial value of the variable.</p>
+<div class="example">
+<p>Example 10.2-1. Declarations of Array Variables</p>
+<pre><code>int[]     ai;        // array of int
+short[][] as;        // array of array of short
+short     s,         // scalar short
+          aas[][];   // array of array of short
+Object[]  ao,        // array of Object
+          otherAo;   // array of Object
+Collection&lt;?&gt;[] ca;  // array of Collection of unknown type</code></pre>
+<p>The declarations above do not create array objects. The following are examples of declarations of array variables that do create array objects:</p>
+<pre><code>Exception ae[]  = new Exception[3];
+Object aao[][]  = new Exception[2][3];
+int[] factorial = { 1, 1, 2, 6, 24, 120, 720, 5040 };
+char ac[]       = { &#39;n&#39;, &#39;o&#39;, &#39;t&#39;, &#39; &#39;, &#39;a&#39;, &#39; &#39;,
+                    &#39;S&#39;, &#39;t&#39;, &#39;r&#39;, &#39;i&#39;, &#39;n&#39;, &#39;g&#39; };
+String[] aas    = { &quot;array&quot;, &quot;of&quot;, &quot;String&quot;, };</code></pre>
+</div>
+<p>The array type of a variable depends on the bracket pairs that may appear as part of the type at the beginning of a variable declaration, or as part of the declarator for the variable, or both. Specifically, in the declaration of a field, formal parameter, <del>or</del> local variable<strong>, or record component</strong> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.3">8.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.1">8.4.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.3">9.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.4">9.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.4.1">14.4.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.14.2">14.14.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.27.1">15.27.1</a><strong>, <a href="#jls-8.10.1">8.10.1</a></strong>), the array type of the variable is denoted by:</p>
+<ul>
+<li><p>the element type that appears at the beginning of the declaration; then,</p></li>
+<li><p>any bracket pairs that follow the variable's <em>Identifier</em> in the declarator (not applicable for a variable arity parameter <strong>or variable arity record component</strong>); then,</p></li>
+<li><p>any bracket pairs that appear in the type at the beginning of the declaration (where the ellipsis of a variable arity parameter <strong>or variable arity record component</strong> is treated as a bracket pair).</p></li>
+</ul>
+<p>The return type of a method (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.5">8.4.5</a>) may be an array type. The precise array type depends on the bracket pairs that may appear as part of the type at the beginning of the method declaration, or after the method's formal parameter list, or both. The array type is denoted by:</p>
+<ul>
+<li><p>the element type that appears in the <em>Result</em>; then,</p></li>
+<li><p>any bracket pairs that follow the formal parameter list; then,</p></li>
+<li><p>any bracket pairs that appear in the <em>Result</em>.</p></li>
+</ul>
+<p>We do not recommend &quot;mixed notation&quot; in array variable declarations, where bracket pairs appear on both the type and in declarators; nor in method declarations, where bracket pairs appear both before and after the formal parameter list.</p>
+<div class="example">
+<p>Example 10.2-2. Array Variables and Array Types</p>
+<p>The local variable declaration statement:</p>
+<pre><code>byte[] rowvector, colvector, matrix[];</code></pre>
+<p>is equivalent to:</p>
+<pre><code>byte rowvector[], colvector[], matrix[][];</code></pre>
+<p>because the array type of each local variable is unchanged. Similarly, the local variable declaration statement:</p>
+<pre><code>int a, b[], c[][];</code></pre>
+<p>is equivalent to the series of declaration statements:</p>
+<pre><code>int a;
+int[] b;
+int[][] c;</code></pre>
+<p>Brackets are allowed in declarators as a nod to the tradition of C and C++. The general rules for variable declaration, however, permit brackets to appear on both the type and in declarators, so that the local variable declaration statement:</p>
+<pre><code>float[][] f[][], g[][][], h[];  // Yechh!</code></pre>
+<p>is equivalent to the series of declarations:</p>
+<pre><code>float[][][][] f;
+float[][][][][] g;
+float[][][] h;</code></pre>
+<p>Because of how array types are formed, the following parameter declarations have the same array type:</p>
+<pre><code>void m(int @A [] @B []  x) {}
+void n(int @A [] @B ... y) {}</code></pre>
+<p>And perhaps surprisingly, the following field declarations have the same array type:</p>
+<pre><code>int @A [] f @B [];
+int @B [] @A [] g;</code></pre>
+</div>
+<p>Once an array object is created, its length never changes. To make an array variable refer to an array of different length, a reference to a different array must be assigned to the variable.</p>
+<p>A single variable of array type may contain references to arrays of different lengths, because an array's length is not part of its type.</p>
+<p>If an array variable <em>v</em> has type <em>A</em><code>[]</code>, where <em>A</em> is a reference type, then <em>v</em> can hold a reference to an instance of any array type <em>B</em><code>[]</code>, provided <em>B</em> can be assigned to <em>A</em> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-5.html#jls-5.2">5.2</a>). This may result in a run-time exception on a <em>later</em> assignment; see <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-10.html#jls-10.5">10.5</a> for a discussion.</p>
+<h2 id="jls-13">Chapter 13: Binary Compatibility</h2>
+<h3 id="jls-13.1">13.1 The Form of a Binary</h3>
+<div class="editorial">
+<p>A <a href="records-jvms.html">companion document</a> describes the changes needed to the <a href="https://docs.oracle.com/javase/specs/jvms/se14/html">Java Virtual Machine Specification</a> to support records.</p>
+</div>
+<p>...</p>
+<p>A binary representation for a class or interface must also contain all of the following:</p>
+<ol type="1">
+<li><p>If it is a class and is not <code>Object</code>, then a symbolic reference to the direct superclass of this class.</p></li>
+<li><p>A symbolic reference to each direct superinterface, if any.</p></li>
+<li><p>A specification of each field declared in the class or interface, given as the simple name of the field and a symbolic reference to the erasure of the type of the field.</p></li>
+<li><p>If it is a class, then the erased signature of each constructor, as described above.</p></li>
+<li><p>For each method declared in the class or interface (excluding, for an interface, its implicitly declared methods (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.2">9.2</a>)), its erased signature and return type, as described above.</p></li>
+<li><p>The code needed to implement the class or interface:</p>
+<ul>
+<li><p>For an interface, code for the field initializers and the implementation of each method with a block body (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.4.3">9.4.3</a>).</p></li>
+<li><p>For a class, code for the field initializers, the instance and static initializers, the implementation of each method with a block body (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.4.7">8.4.7</a>), and the implementation of each constructor.</p></li>
+</ul></li>
+<li><p>Every class or interface must contain sufficient information to recover its canonical name (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-6.html#jls-6.7">6.7</a>).</p></li>
+<li><p>Every member class or interface must have sufficient information to recover its source-level access modifier.</p></li>
+<li><p>Every nested class or interface must have a symbolic reference to its immediately enclosing class or interface (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.3">8.1.3</a>).</p></li>
+<li><p>Every class or interface must contain symbolic references to all of its member classes and interfaces (<a href="#jls-8.5">8.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.5">9.5</a>), and to all other nested classes and interfaces declared within its body.</p></li>
+<li><p>A construct emitted by a Java compiler must be marked as <em>synthetic</em> if it does not correspond to a construct declared explicitly or implicitly in source code, unless the emitted construct is a class initialization method (JVMS §2.9).</p></li>
+<li><p>A construct emitted by a Java compiler must be marked as <em>mandated</em> if it corresponds to a formal parameter declared implicitly in source code (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.1">8.8.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.9">8.8.9</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.9.3">8.9.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9.5.1">15.9.5.1</a>).</p></li>
+</ol>
+<blockquote>
+<p>The following formal parameters are declared implicitly in source code:</p>
+</blockquote>
+<blockquote>
+<ul>
+<li><p>The first formal parameter of a constructor of a non-<code>private</code> inner member class (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.1">8.8.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.9">8.8.9</a>).</p></li>
+<li><p>The first formal parameter of an anonymous constructor of an anonymous class whose superclass is an inner class (not in a static context) (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9.5.1">15.9.5.1</a>).</p></li>
+<li><p>The formal parameter <code>name</code> of the <code>valueOf</code> method which is implicitly declared in an enum class (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.9.3">8.9.3</a>).</p></li>
+<li><p><strong>The formal parameters of a compact constructor of a record class (<a href="#jls-8.10.4">8.10.4</a>).</strong></p></li>
+</ul>
+</blockquote>
+<blockquote>
+<p>For reference, the following constructs are declared implicitly in source code, but are not marked as mandated because only formal parameters can be so marked in a <code>class</code> file (JVMS §4.7.24):</p>
+</blockquote>
+<blockquote>
+<ul>
+<li><p>Default constructors of classes (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.8.9">8.8.9</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.9.2">8.9.2</a>)</p></li>
+<li><p><strong>Canonical constructors of record classes (<a href="#jls-8.10.4">8.10.4</a>)</strong></p></li>
+<li><p>Anonymous constructors (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9.5.1">15.9.5.1</a>)</p></li>
+<li><p>The <code>values</code> and <code>valueOf</code> methods of enum classes (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.9.3">8.9.3</a>)</p></li>
+<li><p>Certain <code>public</code> fields of enum classes (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.9.3">8.9.3</a>)</p></li>
+<li><p><strong>Certain <code>private</code> fields and <code>public</code> methods of record classes (<a href="#jls-8.10.3">8.10.3</a>)</strong></p></li>
+<li><p>Certain <code>public</code> methods of interfaces (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.2">9.2</a>)</p></li>
+<li><p>Container annotations (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.7.5">9.7.5</a>)</p></li>
+</ul>
+</blockquote>
+<p>...</p>
+<h3 id="jls-13.4">13.4 Evolution of Classes</h3>
+<h4 id="jls-13.4.27"><strong>13.4.27 Evolution of Record Classes</strong></h4>
+<div class="inserted">
+<p>Adding, deleting, changing, or reordering record components in a record class declaration may break compatibility with pre-existing binaries that are not recompiled; such a change is not recommended for widely distributed record classes.</p>
+<p>More precisely, adding, deleting, changing, or reordering record components may change the corresponding implicit field declarations and corresponding accessor method declarations, as well as changing the signature and implementation of the canonical constructor and other supporting methods, with consequences described in <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-13.html#jls-13.4.8">13.4.8</a> and <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-13.html#jls-13.4.12">13.4.12</a>.</p>
+<p>In all other respects, the binary compatibility rules for record classes are identical to those for normal classes.</p>
+</div>
+<h2 id="jls-14">Chapter 14: Blocks and Statements</h2>
+<h3 id="jls-14.3">14.3 Local Class and Interface Declarations</h3>
+<p>A <em>local class</em> or a <em>local interface</em> is a nested class or interface (<a href="#jls-8">8</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html">9</a>) whose declaration is immediately contained by a block (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.2">14.2</a>).</p>
+<dl>
+<dt><em>LocalClassOrInterfaceDeclaration:</em></dt>
+<dd><em>ClassDeclaration</em>
+</dd>
+<dd><em>NormalInterfaceDeclaration</em>
+</dd>
+</dl>
+<p>A local class may be an enum class (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.9">8.9</a>) <strong>or a record class (<a href="#jls-8.10">8.10</a>)</strong>. A local interface may <em>not</em> be an annotation interface (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.6">9.6</a>).</p>
+<p>Local enum classes<strong>, record classes,</strong> and <del>local</del> interfaces are implicitly <code>static</code> (<a href="#jls-8.1.1.4">8.1.1.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-9.html#jls-9.1.1.3">9.1.1.3</a>). A local class that is not implicitly <code>static</code> is an inner class (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.3">8.1.3</a>).</p>
+<p>A local class or interface is not a member of any package, class, or interface. Unlike an anonymous class (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-15.html#jls-15.9.5">15.9.5</a>), a local class or interface has a simple name (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-6.html#jls-6.2">6.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-6.html#jls-6.7">6.7</a>).</p>
+<p>Local class and interface declarations may be intermixed freely with other kinds of statements in the enclosing block.</p>
+<p>It is a compile-time error if a local class or interface is declared with any of the access modifiers <code>public</code>, <code>protected</code>, or <code>private</code> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-6.html#jls-6.6">6.6</a>), or the modifier <code>static</code> (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.1.1">8.1.1</a>).</p>
+<p>The scope and shadowing of a local class or interface declaration is specified in <a href="#jls-6.3">6.3</a> and <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-6.html#jls-6.4">6.4</a>.</p>
+<div class="example">
+<p>Example 14.3-1. Local Class and Interface Declarations</p>
+<p>Here is an example that illustrates several aspects of the rules given above:</p>
+<pre><code>class Global {
+    class Cyclic {}
+
+    void foo() {
+        new Cyclic(); // create a Global.Cyclic
+        class Cyclic extends Cyclic {} // circular definition
+
+        {
+            class Local {}
+            {
+                class Local {} // compile-time error
+            }
+            class Local {} // compile-time error
+            class AnotherLocal {
+                void bar() {
+                    class Local {} // ok
+                }
+            }
+        }
+        class Local {} // ok, not in scope of prior Local
+    }
+}</code></pre>
+<p>The first statement of method <code>foo</code> creates an instance of the member class <code>Global.Cyclic</code> rather than an instance of the local class <code>Cyclic</code>, because the statement appears prior to the scope of the local class declaration.</p>
+<p>The fact that the scope of a local class declaration encompasses its whole declaration (not only its body) means that the definition of the local class <code>Cyclic</code> is indeed cyclic because it extends itself rather than <code>Global.Cyclic</code>. Consequently, the declaration of the local class <code>Cyclic</code> is rejected at compile time.</p>
+<p>Since local class names cannot be redeclared within the same method (or constructor or initializer, as the case may be), the second and third declarations of <code>Local</code> result in compile-time errors. However, <code>Local</code> can be redeclared in the context of another, more deeply nested, class such as <code>AnotherLocal</code>.</p>
+<p>The final declaration of <code>Local</code> is legal, since it occurs outside the scope of any prior declaration of <code>Local</code>.</p>
+</div>
+<h2 id="jls-16">Chapter 16: Definite Assignment</h2>
+<p>Each local variable (<a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-14.html#jls-14.4">14.4</a>) and every blank <code>final</code> field ([4.12.4], <a href="https://docs.oracle.com/javase/specs/jls/se14/html/jls-8.html#jls-8.3.1.2">8.3.1.2</a>) must have a <em>definitely assigned</em> value when any access of its value occurs.</p>
+<p>An access to its value consists of the simple name of the variable (or, for a field, the simple name of the field qualified by <code>this</code>) occurring anywhere in an expression except as the left-hand operand of the simple assignment operator <code>=</code> ([15.26.1]).</p>
+<p>For every access of a local variable or blank <code>final</code> field <em>x</em>, <em>x</em> must be definitely assigned before the access, or a compile-time error occurs.</p>
+<p>Similarly, every blank <code>final</code> variable must be assigned at most once; it must be <em>definitely unassigned</em> when an assignment to it occurs.</p>
+<p>Such an assignment is defined to <del>occur</del> <strong><em>occur</em></strong> if and only if either the simple name of the variable (or, for a field, its simple name qualified by <code>this</code>) occurs on the left hand side of an assignment operator.</p>
+<div class="editorial">
+<p>This is an editorial change to italicize the notion of an assignment <em>occurring</em>.</p>
+</div>
+<p>...</p>
+</main><footer class="legal-footer"><hr/><a href="../legal/copyright.html">Copyright</a> &copy; 1993, 2021, Oracle and/or its affiliates, 500 Oracle Parkway, Redwood Shores, CA 94065 USA.<br>All rights reserved. Use is subject to <a href="https://www.oracle.com/java/javase/terms/license/java16.0.1speclicense.html">license terms</a> and the <a href="https://www.oracle.com/technetwork/java/redist-137594.html">documentation redistribution policy</a>. <!-- Version 16.0.1+9-24 --></footer>
+</body>
+</html>

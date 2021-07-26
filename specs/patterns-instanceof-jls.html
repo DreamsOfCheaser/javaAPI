@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc,fixuphtml" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Pattern Matching for instanceof</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="../resources/jdk-default.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="stylesheet" href="../resources/spec-changes.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Pattern Matching for <code>instanceof</code></h1>
+<p class="subtitle">Changes to the Java® Language Specification • Version 16.0.1+9-24</p>
+</header>
+<nav id="TOC" title="Table Of Contents">
+<ul>
+<li><a href="#jls-1">Chapter 1: Introduction</a><ul>
+<li><a href="#jls-1.1">1.1 Organization of the Specification</a></li>
+</ul></li>
+<li><a href="#jls-4">Chapter 4: Types, Values, and Variables</a><ul>
+<li><a href="#jls-4.11">4.11 Where Types Are Used</a></li>
+<li><a href="#jls-4.12">4.12 Variables</a><ul>
+<li><a href="#jls-4.12.3">4.12.3 Kinds of Variables</a></li>
+<li><a href="#jls-4.12.4">4.12.4 <code>final</code> Variables</a></li>
+<li><a href="#jls-4.12.5">4.12.5 Initial Values of Variables</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#jls-6">Chapter 6: Names</a><ul>
+<li><a href="#jls-6.1">6.1 Declarations</a></li>
+<li><a href="#jls-6.3">6.3 Scope of a Declaration</a><ul>
+<li><a href="#jls-6.3.1"><strong>6.3.1 Pattern Declaration Scopes and Expressions</strong></a><ul>
+<li><a href="#jls-6.3.1.1"><strong>6.3.1.1 Conditional-And Operator <code>&amp;&amp;</code></strong></a></li>
+<li><a href="#jls-6.3.1.2"><strong>6.3.1.2 Conditional-Or Operator <code>||</code></strong></a></li>
+<li><a href="#jls-6.3.1.3"><strong>6.3.1.3 Logical Complement Operator <code>!</code></strong></a></li>
+<li><a href="#jls-6.3.1.4"><strong>6.3.1.4 Conditional Operator <code>? :</code></strong></a></li>
+<li><a href="#jls-6.3.1.5"><strong>6.3.1.5 <code>instanceof</code> Operator</strong></a></li>
+<li><a href="#jls-6.3.1.6"><strong>6.3.1.6 <code>switch</code> Expressions</strong></a></li>
+<li><a href="#jls-6.3.1.7"><strong>6.3.1.7 Parenthesized Expressions</strong></a></li>
+</ul></li>
+<li><a href="#jls-6.3.2"><strong>6.3.2 Pattern Declaration Scopes and Statements</strong></a><ul>
+<li><a href="#jls-6.3.2.1"><strong>6.3.2.1 Blocks</strong></a></li>
+<li><a href="#jls-6.3.2.2"><strong>6.3.2.2 <code>if</code> Statements</strong></a></li>
+<li><a href="#jls-6.3.2.3"><strong>6.3.2.3 <code>while</code> Statements</strong></a></li>
+<li><a href="#jls-6.3.2.4"><strong>6.3.2.4 <code>do</code> Statements</strong></a></li>
+<li><a href="#jls-6.3.2.5"><strong>6.3.2.5 <code>for</code> Statements</strong></a></li>
+<li><a href="#jls-6.3.2.6"><strong>6.3.2.6 <code>switch</code> Statements</strong></a></li>
+<li><a href="#jls-6.3.2.7"><strong>6.3.2.7 Labeled Statements</strong></a></li>
+</ul></li>
+</ul></li>
+<li><a href="#jls-6.4">6.4 Shadowing and Obscuring</a></li>
+<li><a href="#jls-6.5">6.5 Determining the Meaning of a Name</a><ul>
+<li><a href="#jls-6.5.1">6.5.1 Syntactic Classification of a Name According to Context</a></li>
+<li><a href="#jls-6.5.2">6.5.2 Reclassification of Contextually Ambiguous Names</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#jls-9">Chapter 9: Interfaces</a><ul>
+<li><a href="#jls-9.6">9.6 Annotation Types</a><ul>
+<li><a href="#jls-9.6.4">9.6.4 Predefined Annotation Types</a><ul>
+<li><a href="#jls-9.6.4.1">9.6.4.1 <code>@Target</code></a></li>
+</ul></li>
+<li><a href="#jls-9.7.4">9.7.4 Where Annotations May Appear</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#jls-14">Chapter 14: <del>Blocks and</del> Statements <strong>and Patterns</strong></a><ul>
+<li><a href="#jls-14.4">14.4 Local Variable <del>Declaration Statements</del> <strong>Declarations</strong></a><ul>
+<li><a href="#jls-14.4.1">14.4.1 Local Variable Declarators and Types</a></li>
+<li><a href="#jls-14.4.2">14.4.2 <del>Execution of Local Variable Declarations</del> <strong>Local Variable Declaration Statements</strong></a></li>
+</ul></li>
+<li><a href="#jls-14.14">14.14 The <code>for</code> Statement</a><ul>
+<li><a href="#jls-14.14.2">14.14.2 The enhanced <code>for</code> statement</a></li>
+</ul></li>
+<li><a href="#jls-14.20">14.20 The <code>try</code> statement</a><ul>
+<li><a href="#jls-14.20.3">14.20.3 <code>try</code>-with-resources</a></li>
+</ul></li>
+<li><a href="#jls-14.30"><strong>14.30 Patterns</strong></a><ul>
+<li><a href="#jls-14.30.1"><strong>14.30.1 Kinds of Patterns</strong></a></li>
+<li><a href="#jls-14.30.2"><strong>14.30.2 Pattern Matching</strong></a></li>
+</ul></li>
+</ul></li>
+<li><a href="#jls-15">Chapter 15: Expressions</a><ul>
+<li><a href="#jls-15.20">15.20 Relational Operators</a><ul>
+<li><a href="#jls-15.20.2">15.20.2 <del>Type Comparison Operator <code>instanceof</code></del> <strong>The <code>instanceof</code> Operator</strong></a></li>
+</ul></li>
+</ul></li>
+<li><a href="#jls-16">Chapter 16: Definite Assignment</a><ul>
+<li><a href="#jls-16.2">16.2 Definite Assignment and Statements</a><ul>
+<li><a href="#jls-16.2.15">16.2.15 <code>try</code> Statements</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#jls-17">Chapter 17: Threads and Locks</a><ul>
+<li><a href="#jls-17.4">17.4 Memory Model</a><ul>
+<li><a href="#jls-17.4.1">17.4.1 Shared Variables</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+<main><p>This document describes changes to the <a href="https://docs.oracle.com/javase/specs/jls/se15/html">Java Language Specification</a> to support <em>pattern matching</em> in <code>instanceof</code> expressions, a feature of Java SE 16. See <a href="https://openjdk.java.net/jeps/394">JEP 394</a> for an overview of the feature.</p>
+<p>These changes are the same as those in the <a href="https://docs.oracle.com/javase/specs/jls/se15/preview/specs/patterns-instanceof-jls.html">second preview</a> of pattern matching for <code>instanceof</code> in Java SE 15, except for some minor editorial changes and the following additional changes:</p>
+<ul>
+<li><p>To lift the restriction that pattern variables are implicitly final (<a href="#jls-4.12.4">4.12.4</a>). This allows pattern variables to be considered as a strict subset of local variables. A number of changes to the specification result from this simplification (primarily in <a href="#jls-4.11">4.11</a> and <a href="#jls-4.12.3">4.12.3</a>, and also a change to the grammar for patterns in <a href="#jls-14.30.1">14.30.1</a>).</p></li>
+<li><p>To allow pattern variables to be explicitly declared <code>final</code> (<a href="#jls-14.30.1">14.30.1</a>).</p></li>
+<li><p>To unify the grammars of the statements that declare local variables; i.e. the local variable declaration statement (<a href="#jls-14.4">14.4</a>), basic <code>for</code> statement (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.14.1">14.14.1</a>), and the <code>try</code>-with-resources statement (<a href="#jls-14.20.3">14.20.3</a>). They all now use the <em>LocalVariableDeclaration</em> non-terminal, rather than ad-hoc variants, and then use non-syntactic restrictions to rule out invalid productions (meaning <em>this is not a change to the set of valid Java programs</em>).</p></li>
+<li><p>To make it a compile-time error for an pattern <code>instanceof</code> expression to compare an expression of type <em>S</em> against a pattern of type <em>T</em>, where <em>S</em> is a subtype of <em>T</em> (<a href="#jls-15.20.2">15.20.2</a>). (This <code>instanceof</code> expression will always succeed and is then pointless. The opposite case, where a pattern match will always fail, is already a compile-time error.)</p></li>
+<li><p>Renamed 'type test patterns' to the simpler 'type patterns'.</p></li>
+<li><p>Removed erroneous changes to Section 5.5 (Casting Contexts).</p></li>
+<li><p>A refactoring of the description of the semantics of the pattern <code>instanceof</code> operator (<a href="#jls-15.20.2">15.20.2</a> and <a href="#jls-14.30.2">14.30.2</a>).</p></li>
+<li><p>Remove the unnecessary section header 14.30.2; its contents go in <a href="#jls-14.30.1">14.30.1</a></p></li>
+</ul>
+<p>Changes are described with respect to existing sections of the JLS. New text is indicated <strong>like this</strong> and deleted text is indicated <del>like this</del>. Explanation and discussion, as needed, is set aside in grey boxes.</p>
+<h2 id="jls-1">Chapter 1: Introduction</h2>
+<h3 id="jls-1.1">1.1 Organization of the Specification</h3>
+<p>...</p>
+<p>Chapter 14 describes blocks and statements, which are based on C and C++<strong>, and patterns, which conditionally initialize local variables</strong>. The language has no <code>goto</code> statement, but includes labeled <code>break</code> and <code>continue</code> statements. Unlike C, the Java programming language requires <code>boolean</code> (or <code>Boolean</code>) expressions in control-flow statements, and does not convert types to <code>boolean</code> implicitly (except through unboxing), in the hope of catching more errors at compile time. A <code>synchronized</code> statement provides basic object-level monitor locking. A <code>try</code> statement can include <code>catch</code> and <code>finally</code> clauses to protect against non-local control transfers.</p>
+<p>...</p>
+<h2 id="jls-4">Chapter 4: Types, Values, and Variables</h2>
+<h3 id="jls-4.11">4.11 Where Types Are Used</h3>
+<p>Types are used in most kinds of declaration and in certain kinds of expression. Specifically, there are 16 <em>type contexts</em> where types are used:</p>
+<ul>
+<li><p>In declarations:</p>
+<ol type="1">
+<li><p>A type in the <code>extends</code> or <code>implements</code> clause of a class declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.1.4">8.1.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.1.5">8.1.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.5">8.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.5">9.5</a>)</p></li>
+<li><p>A type in the <code>extends</code> clause of an interface declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.1.3">9.1.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.5">8.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.5">9.5</a>)</p></li>
+<li><p>The return type of a method (including the type of an element of an annotation type) (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.5">8.4.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.4">9.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.6.1">9.6.1</a>)</p></li>
+<li><p>A type in the <code>throws</code> clause of a method or constructor (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.6">8.4.6</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8.5">8.8.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.4">9.4</a>)</p></li>
+<li><p>A type in the <code>extends</code> clause of a type parameter declaration of a generic class, interface, method, or constructor (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.1.2">8.1.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.1.2">9.1.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.4">8.4.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8.4">8.8.4</a>)</p></li>
+<li><p>The type in a field declaration of a class or interface (including an enum constant) (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.3">8.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.3">9.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.9.1">8.9.1</a>)</p></li>
+<li><p>The type in a formal parameter declaration of a method, constructor, or lambda expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.1">8.4.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8.1">8.8.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.4">9.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.27.1">15.27.1</a>)</p></li>
+<li><p>The type of the receiver parameter of a method (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4">8.4</a>)</p></li>
+<li><p>The type in a local variable declaration<strong>, enhanced <code>for</code> statement, or pattern</strong> (<a href="#jls-14.4">14.4</a>, <del><a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.14.1">14.14.1</a>,</del> <a href="#jls-14.14.2">14.14.2</a>, <del><a href="#jls-14.20.3">14.20.3</a>,</del> <strong><a href="#jls-14.30">14.30</a></strong>)</p></li>
+<li><p>The type in an exception parameter declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.20">14.20</a>)</p></li>
+</ol></li>
+<li><p>In expressions:</p>
+<ol type="1">
+<li><p>A type in the explicit type argument list to an explicit constructor invocation statement or class instance creation expression or method invocation expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8.7.1">8.8.7.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.9">15.9</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.12">15.12</a>)</p></li>
+<li><p>In an unqualified class instance creation expression, as the class type to be instantiated (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.9">15.9</a>) or as the direct superclass or direct superinterface of an anonymous class to be instantiated (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.9.5">15.9.5</a>)</p></li>
+<li><p>The element type in an array creation expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.10.1">15.10.1</a>)</p></li>
+<li><p>The type in the cast operator of a cast expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.16">15.16</a>)</p></li>
+<li><p>The type that follows the <strong>type</strong> <code>instanceof</code> relational operator (<a href="#jls-15.20.2">15.20.2</a>)</p></li>
+<li><p>In a method reference expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.13">15.13</a>), as the reference type to search for a member method or as the class type or array type to construct.</p></li>
+</ol></li>
+</ul>
+<p>Also, types are used as:</p>
+<ul>
+<li><p>The element type of an array type in any of the above contexts; and</p></li>
+<li><p>A non-wildcard type argument, or a bound of a wildcard type argument, of a parameterized type in any of the above contexts.</p></li>
+</ul>
+<p>Finally, there are three special terms in the Java programming language which denote the use of a type:</p>
+<ul>
+<li><p>An unbounded wildcard (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-4.html#jls-4.5.1">4.5.1</a>)</p></li>
+<li><p>The <code>...</code> in the type of a variable arity parameter (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.1">8.4.1</a>), to indicate an array type</p></li>
+<li><p>The simple name of a type in a constructor declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8">8.8</a>), to indicate the class of the constructed object</p></li>
+</ul>
+<p>...</p>
+<h3 id="jls-4.12">4.12 Variables</h3>
+<h4 id="jls-4.12.3">4.12.3 Kinds of Variables</h4>
+<p>There are eight kinds of variables:</p>
+<ol type="1">
+<li><p>A <em>class variable</em> is a field declared using the keyword <code>static</code> within a class declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.3.1.1">8.3.1.1</a>), or with or without the keyword <code>static</code> within an interface declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.3">9.3</a>).</p>
+<p>A class variable is created when its class or interface is prepared (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-12.html#jls-12.3.2">12.3.2</a>) and is initialized to a default value (<a href="#jls-4.12.5">4.12.5</a>). The class variable effectively ceases to exist when its class or interface is unloaded (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-12.html#jls-12.7">12.7</a>).</p></li>
+<li><p>An <em>instance variable</em> is a field declared within a class declaration without using the keyword <code>static</code> (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.3.1.1">8.3.1.1</a>).</p>
+<p>If a class <em>T</em> has a field <code>a</code> that is an instance variable, then a new instance variable <code>a</code> is created and initialized to a default value (<a href="#jls-4.12.5">4.12.5</a>) as part of each newly created object of class <em>T</em> or of any class that is a subclass of <em>T</em> (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.1.4">8.1.4</a>). The instance variable effectively ceases to exist when the object of which it is a field is no longer referenced, after any necessary finalization of the object (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-12.html#jls-12.6">12.6</a>) has been completed.</p></li>
+<li><p><em>Array components</em> are unnamed variables that are created and initialized to default values (<a href="#jls-4.12.5">4.12.5</a>) whenever a new object that is an array is created (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-10.html">10</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.10.2">15.10.2</a>). The array components effectively cease to exist when the array is no longer referenced.</p></li>
+<li><p><em>Method parameters</em> (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.1">8.4.1</a>) name argument values passed to a method.</p>
+<p>For every parameter declared in a method declaration, a new parameter variable is created each time that method is invoked (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.12">15.12</a>). The new variable is initialized with the corresponding argument value from the method invocation. The method parameter effectively ceases to exist when the execution of the body of the method is complete.</p></li>
+<li><p><em>Constructor parameters</em> (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8.1">8.8.1</a>) name argument values passed to a constructor.</p>
+<p>For every parameter declared in a constructor declaration, a new parameter variable is created each time a class instance creation expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.9">15.9</a>) or explicit constructor invocation (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8.7">8.8.7</a>) invokes that constructor. The new variable is initialized with the corresponding argument value from the creation expression or constructor invocation. The constructor parameter effectively ceases to exist when the execution of the body of the constructor is complete.</p></li>
+<li><p><em>Lambda parameters</em> (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.27.1">15.27.1</a>) name argument values passed to a lambda expression body (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.27.2">15.27.2</a>).</p>
+<p>For every parameter declared in a lambda expression, a new parameter variable is created each time a method implemented by the lambda body is invoked (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.12">15.12</a>). The new variable is initialized with the corresponding argument value from the method invocation. The lambda parameter effectively ceases to exist when the execution of the lambda expression body is complete.</p></li>
+<li><p>An <em>exception parameter</em> is created each time an exception is caught by a <code>catch</code> clause of a <code>try</code> statement (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.20">14.20</a>).</p>
+<p>The new variable is initialized with the actual object associated with the exception (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-11.html#jls-11.3">11.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.18">14.18</a>). The exception parameter effectively ceases to exist when execution of the block associated with the <code>catch</code> clause is complete.</p></li>
+<li><p><del><em>Local variables</em> are declared by local variable declaration statements (<a href="#jls-14.4">14.4</a>).</del> <strong>A <em>local variable</em> is a variable declared by a local variable declaration (<a href="#jls-14.4">14.4</a>), or a pattern (<a href="#jls-14.30">14.30</a>). A local variable declared in a pattern is sometimes called a <em>pattern variable</em>.</strong></p>
+<div class="deleted">
+<p>Whenever the flow of control enters a block (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.2">14.2</a>) or <code>for</code> statement (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.14">14.14</a>), a new variable is created for each local variable declared in a local variable declaration statement immediately contained within that block or <code>for</code> statement.</p>
+<p>A local variable declaration statement may contain an expression which initializes the variable. The local variable with an initializing expression is not initialized, however, until the local variable declaration statement that declares it is executed. (The rules of definite assignment (<a href="#jls-16.html">16</a>) prevent the value of a local variable from being used before it has been initialized or otherwise assigned a value.) The local variable effectively ceases to exist when the execution of the block or for statement is complete.</p>
+</div>
+<div class="inserted">
+<p>A local variable declared by a local variable declaration is created when the flow of control enters the nearest enclosing block (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.2">14.2</a>), <code>for</code> statement, or <code>try</code>-with-resources statement.</p>
+<p>A local variable declared by a local variable declaration is initialized as part of the execution of its nearest enclosing statement, provided it has an initializer. The rules of definite assignment (<a href="#jls-16.html">16</a>) prevent the value of a local variable from being used before it has been initialized or otherwise assigned a value.</p>
+<p>A local variable declared by a pattern is created and initialized when the pattern matches (<a href="#jls-14.30.2">14.30.2</a>). The rules of scoping (<a href="#jls-6.3">6.3</a>) prevent the value of a pattern variable from being used unless its declaring type pattern has matched.</p>
+<p>A local variable ceases to exist when its declaration is no longer in scope (<a href="#jls-6.3">6.3</a>).</p>
+</div>
+<blockquote>
+<p>Were it not for one exceptional situation, a local variable <strong>declared by a local variable declaration statement</strong> could always be regarded as being created when <strong>the</strong> <del>its local variable declaration</del> statement is executed. The exceptional situation involves the <code>switch</code> statement (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.11">14.11</a>), where it is possible for control to enter a block but bypass execution of a local variable declaration statement. Because of the restrictions imposed by the rules of definite assignment (<a href="#jls-16.html">16</a>), however, the local variable declared by such a bypassed local variable declaration statement cannot be used before it has been definitely assigned a value by an assignment expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.26">15.26</a>).</p>
+</blockquote></li>
+</ol>
+<div class="example">
+<p>Example 4.12.3-1. Different Kinds of Variables</p>
+<pre><code>class Point {
+    static int numPoints;   // numPoints is a class variable
+    int x, y;               // x and y are instance variables
+    int[] w = new int[10];  // w[0] is an array component
+    int setX(int x) {       // x is a method parameter
+        int oldx = this.x;  // oldx is a local variable
+        this.x = x;
+        return oldx;
+    }</code></pre>
+<div class="inserted">
+<pre><code>    boolean equalAtX(Object o) {
+        if (o instanceof Point p)  // p is a pattern variable
+            return this.x == p.x;
+        else
+            return false;
+    }</code></pre>
+</div>
+<pre><code>}</code></pre>
+</div>
+<h4 id="jls-4.12.4">4.12.4 <code>final</code> Variables</h4>
+<p>A variable can be declared <code>final</code>. A <code>final</code> variable may only be assigned to once. It is a compile-time error if a <code>final</code> variable is assigned to unless it is definitely unassigned immediately prior to the assignment (<a href="#jls-16.html">16</a>).</p>
+<p>Once a <code>final</code> variable has been assigned, it always contains the same value. If a <code>final</code> variable holds a reference to an object, then the state of the object may be changed by operations on the object, but the variable will always refer to the same object. This applies also to arrays, because arrays are objects; if a <code>final</code> variable holds a reference to an array, then the components of the array may be changed by operations on the array, but the variable will always refer to the same array.</p>
+<p>A <em>blank <code>final</code></em> is a <code>final</code> variable whose declaration lacks an initializer.</p>
+<p>A <em>constant variable</em> is a <code>final</code> variable of primitive type or type <code>String</code> that is initialized with a constant expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.29">15.29</a>). Whether a variable is a constant variable or not may have implications with respect to class initialization (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-12.html#jls-12.4.1">12.4.1</a>), binary compatibility (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-13.html#jls-13.1">13.1</a>), reachability (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.22">14.22</a>), and definite assignment (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-16.html#jls-16.1.1">16.1.1</a>).</p>
+<p>Three kinds of variable are implicitly declared <code>final</code>: a field of an interface (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.3">9.3</a>), a local variable declared as a resource of a <code>try</code>-with-resources statement (<a href="#jls-14.20.3">14.20.3</a>), and an exception parameter of a multi-<code>catch</code> clause (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.20">14.20</a>). An exception parameter of a uni-<code>catch</code> clause is never implicitly declared <code>final</code>, but may be effectively final.</p>
+<div class="example">
+<p>Example 4.12.4-1. Final Variables</p>
+<p>Declaring a variable <code>final</code> can serve as useful documentation that its value will not change and can help avoid programming errors. In this program:</p>
+<pre><code>class Point {
+    int x, y;
+    int useCount;
+    Point(int x, int y) { this.x = x; this.y = y; }
+    static final Point origin = new Point(0, 0);
+}</code></pre>
+<p>the class <code>Point</code> declares a <code>final</code> class variable <code>origin</code>. The <code>origin</code> variable holds a reference to an object that is an instance of class <code>Point</code> whose coordinates are (0, 0). The value of the variable <code>Point.origin</code> can never change, so it always refers to the same <code>Point</code> object, the one created by its initializer. However, an operation on this <code>Point</code> object might change its state - for example, modifying its <code>useCount</code> or even, misleadingly, its <code>x</code> or <code>y</code> coordinate.</p>
+</div>
+<p>Certain variables that are not declared <code>final</code> are instead considered <em>effectively final</em>:</p>
+<ul>
+<li><p>A local variable whose declarator has an initializer (<del><a href="#jls-14.4.2">14.4.2</a></del> <strong><a href="#jls-14.4">14.4</a></strong>) <strong>or is declared by a pattern</strong> is <em>effectively final</em> if all of the following are true:</p>
+<ul>
+<li><p>It is not declared <code>final</code>.</p></li>
+<li><p>It never occurs as the left hand side in an assignment expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.26">15.26</a>). (Note that the local variable declarator containing the initializer is <em>not</em> an assignment expression.)</p></li>
+<li><p>It never occurs as the operand of a prefix or postfix increment or decrement operator (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.14">15.14</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.15">15.15</a>).</p></li>
+</ul></li>
+<li><p>A local variable <strong>declared by a local variable declaration</strong> whose declarator lacks an initializer is <em>effectively final</em> if all of the following are true:</p>
+<ul>
+<li><p>It is not declared <code>final</code>.</p></li>
+<li><p>Whenever it occurs as the left hand side in an assignment expression, it is definitely unassigned and not definitely assigned before the assignment; that is, it is definitely unassigned and not definitely assigned after the right hand side of the assignment expression (<a href="#jls-16.html">16</a>).</p></li>
+<li><p>It never occurs as the operand of a prefix or postfix increment or decrement operator.</p></li>
+</ul></li>
+<li><p>A method, constructor, lambda, or exception parameter (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.1">8.4.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8.1">8.8.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.4">9.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.27.1">15.27.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.20">14.20</a>) is treated, for the purpose of determining whether it is <em>effectively final</em>, as a local variable whose declarator has an initializer.</p></li>
+</ul>
+<p>If a variable is effectively final, adding the <code>final</code> modifier to its declaration will not introduce any compile-time errors. Conversely, a local variable or parameter that is declared <code>final</code> in a valid program becomes effectively final if the <code>final</code> modifier is removed.</p>
+<h4 id="jls-4.12.5">4.12.5 Initial Values of Variables</h4>
+<p>Every variable in a program must have a value before its value is used:</p>
+<ul>
+<li><p>Each class variable, instance variable, or array component is initialized with a <em>default value</em> when it is created (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.9">15.9</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.10.2">15.10.2</a>):</p>
+<ul>
+<li><p>For type <code>byte</code>, the default value is zero, that is, the value of <code>(byte)0</code>.</p></li>
+<li><p>For type <code>short</code>, the default value is zero, that is, the value of <code>(short)0</code>.</p></li>
+<li><p>For type <code>int</code>, the default value is zero, that is, <code>0</code>.</p></li>
+<li><p>For type <code>long</code>, the default value is zero, that is, <code>0L</code>.</p></li>
+<li><p>For type <code>float</code>, the default value is positive zero, that is, <code>0.0f</code>.</p></li>
+<li><p>For type <code>double</code>, the default value is positive zero, that is, <code>0.0d</code>.</p></li>
+<li><p>For type <code>char</code>, the default value is the null character, that is, <code>'\u0000'</code>.</p></li>
+<li><p>For type <code>boolean</code>, the default value is <code>false</code>.</p></li>
+<li><p>For all reference types (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-4.html#jls-4.3">4.3</a>), the default value is <code>null</code>.</p></li>
+</ul></li>
+<li><p>Each method parameter (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.1">8.4.1</a>) is initialized to the corresponding argument value provided by the invoker of the method (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.12">15.12</a>).</p></li>
+<li><p>Each constructor parameter (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8.1">8.8.1</a>) is initialized to the corresponding argument value provided by a class instance creation expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.9">15.9</a>) or explicit constructor invocation (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8.7">8.8.7</a>).</p></li>
+<li><p>An exception parameter (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.20">14.20</a>) is initialized to the thrown object representing the exception (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-11.html#jls-11.3">11.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.18">14.18</a>).</p></li>
+<li><p>A local variable <strong>declared by a local variable declaration</strong> (<a href="#jls-14.4">14.4</a><del>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.14">14.14</a></del>) must be explicitly given a value before it is used, by either initialization <del>(<a href="#jls-14.4">14.4</a>)</del>, or assignment (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.26">15.26</a>)<del>,</del> in a way that can be verified using the rules for definite assignment (<a href="#jls-16.html">16</a>). <strong>A pattern variable is initialized by the process of pattern matching (<a href="#jls-14.30.2">14.30.2</a>).</strong></p></li>
+</ul>
+<div class="example">
+<p>Example 4.12.5-1. Initial Values of Variables</p>
+<pre><code>class Point {
+    static int npoints;
+    int x, y;
+    Point root;
+}
+
+class Test {
+    public static void main(String[] args) {
+        System.out.println(&quot;npoints=&quot; + Point.npoints);
+        Point p = new Point();
+        System.out.println(&quot;p.x=&quot; + p.x + &quot;, p.y=&quot; + p.y);
+        System.out.println(&quot;p.root=&quot; + p.root);
+    }
+}</code></pre>
+<p>This program prints:</p>
+<pre><code>npoints=0
+p.x=0, p.y=0
+p.root=null</code></pre>
+<p>illustrating the default initialization of <code>npoints</code>, which occurs when the class <code>Point</code> is prepared (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-12.html#jls-12.3.2">12.3.2</a>), and the default initialization of <code>x</code>, <code>y</code>, and <code>root</code>, which occurs when a new <code>Point</code> is instantiated. See <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-12.html">12</a> for a full description of all aspects of loading, linking, and initialization of classes and interfaces, plus a description of the instantiation of classes to make new class instances.</p>
+</div>
+<h2 id="jls-6">Chapter 6: Names</h2>
+<h3 id="jls-6.1">6.1 Declarations</h3>
+<p>A <em>declaration</em> introduces an entity into a program and includes an identifier (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-3.html#jls-3.8">3.8</a>) that can be used in a name to refer to this entity. The identifier is constrained to be a type identifier when the entity being introduced is a class, interface, or type parameter.</p>
+<p>A declared entity is one of the following:</p>
+<ul>
+<li><p>A module, declared in a <code>module</code> declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.7">7.7</a>)</p></li>
+<li><p>A package, declared in a <code>package</code> declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.4">7.4</a>)</p></li>
+<li><p>An imported type, declared in a single-type-import declaration or a type-import-on-demand declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.5.1">7.5.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.5.2">7.5.2</a>)</p></li>
+<li><p>An imported <code>static</code> member, declared in a single-static-import declaration or a static-import-on-demand declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.5.3">7.5.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.5.4">7.5.4</a>)</p></li>
+<li><p>A class, declared in a class type declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.1">8.1</a>)</p></li>
+<li><p>An interface, declared in an interface type declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.1">9.1</a>)</p></li>
+<li><p>A type parameter, declared as part of the declaration of a generic class, interface, method, or constructor (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.1.2">8.1.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.1.2">9.1.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.4">8.4.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8.4">8.8.4</a>)</p></li>
+<li><p>A member of a reference type (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.2">8.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.2">9.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.9.3">8.9.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.6">9.6</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-10.html#jls-10.7">10.7</a>), one of the following:</p>
+<ul>
+<li><p>A member class (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.5">8.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.5">9.5</a>)</p></li>
+<li><p>A member interface (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.5">8.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.5">9.5</a>)</p></li>
+<li><p>An enum constant (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.9">8.9</a>)</p></li>
+<li><p>A field, one of the following:</p>
+<ul>
+<li><p>A field declared in a class type or enum type (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.3">8.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.9.2">8.9.2</a>)</p></li>
+<li><p>A field declared in an interface type or annotation type (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.3">9.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.6.1">9.6.1</a>)</p></li>
+<li><p>The field <code>length</code>, which is implicitly a member of every array type (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-10.html#jls-10.7">10.7</a>)</p></li>
+</ul></li>
+<li><p>A method, one of the following:</p>
+<ul>
+<li><p>A method (<code>abstract</code> or otherwise) declared in a class type or enum type (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4">8.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.9.2">8.9.2</a>)</p></li>
+<li><p>A method (<code>abstract</code> or otherwise) declared in an interface type or annotation type (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.4">9.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.6.1">9.6.1</a>)</p></li>
+</ul></li>
+</ul></li>
+<li><p>A parameter, one of the following:</p>
+<ul>
+<li><p>A formal parameter of a method or constructor of a class type or enum type (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.1">8.4.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8.1">8.8.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.9.2">8.9.2</a>), or of a lambda expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.27.1">15.27.1</a>)</p></li>
+<li><p>A formal parameter of an <code>abstract</code> method of an interface type or annotation type (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.4">9.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.6.1">9.6.1</a>)</p></li>
+<li><p>An exception parameter of an exception handler declared in a <code>catch</code> clause of a <code>try</code> statement (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.20">14.20</a>)</p></li>
+</ul></li>
+<li><p>A local variable, one of the following:</p>
+<ul>
+<li><p>A local variable declared <del>in a block</del> <strong>by a local variable declaration</strong> (<a href="#jls-14.4">14.4</a>)</p></li>
+<li><p><del>A local variable declared in a <code>for</code> statement (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.14">14.14</a>)</del></p></li>
+<li><p><strong>A local variable declared by a pattern (a pattern variable) (<a href="#jls-14.30">14.30</a>)</strong></p></li>
+</ul></li>
+</ul>
+<p>Constructors (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8">8.8</a>) are also introduced by declarations, but use the name of the class in which they are declared rather than introducing a new name.</p>
+<p>...</p>
+<h3 id="jls-6.3">6.3 Scope of a Declaration</h3>
+<p>The <em>scope</em> of a declaration is the region of the program within which the entity declared by the declaration can be referred to using a simple name, provided it is not shadowed (<a href="#jls-6.4.1">6.4.1</a>).</p>
+<p>A declaration is said to be <em>in scope</em> at a particular point in a program if and only if the declaration's scope includes that point.</p>
+<p>The scope of the declaration of an observable top level package (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.4.3">7.4.3</a>) is all observable compilation units associated with modules to which the package is uniquely visible (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.4.3">7.4.3</a>).</p>
+<p>The declaration of a package that is not observable is never in scope.</p>
+<p>The declaration of a subpackage is never in scope.</p>
+<p>The package <code>java</code> is always in scope.</p>
+<p>The scope of a type imported by a single-type-import declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.5.1">7.5.1</a>) or a type-import-on-demand declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.5.2">7.5.2</a>) is the module declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.7">7.7</a>) and all the class and interface type declarations (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.6">7.6</a>) of the compilation unit in which the <code>import</code> declaration appears, as well as any annotations on the module declaration or package declaration of the compilation unit.</p>
+<p>The scope of a member imported by a single-static-import declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.5.3">7.5.3</a>) or a static-import-on-demand declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.5.4">7.5.4</a>) is the module declaration and all the class and interface type declarations of the compilation unit in which the <code>import</code> declaration appears, as well as any annotations on the module declaration or package declaration of the compilation unit.</p>
+<p>The scope of a top level type (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.6">7.6</a>) is all type declarations in the package in which the top level type is declared.</p>
+<p>The scope of a declaration of a member <em>m</em> declared in or inherited by a class type <em>C</em> (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.1.6">8.1.6</a>) is the entire body of <em>C</em>, including any nested type declarations.</p>
+<p>The scope of a declaration of a member <em>m</em> declared in or inherited by an interface type <em>I</em> (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.1.4">9.1.4</a>) is the entire body of <em>I</em>, including any nested type declarations.</p>
+<p>The scope of an enum constant <em>C</em> declared in an enum type <em>T</em> is the body of <em>T</em>, and any <code>case</code> label of a <code>switch</code> statement whose expression is of enum type <em>T</em> (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.11">14.11</a>).</p>
+<p>The scope of a formal parameter of a method (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.1">8.4.1</a>), constructor (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8.1">8.8.1</a>), or lambda expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.27">15.27</a>) is the entire body of the method, constructor, or lambda expression.</p>
+<p>The scope of a class's type parameter (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.1.2">8.1.2</a>) is the type parameter section of the class declaration, the type parameter section of any superclass or superinterface of the class declaration, and the class body.</p>
+<p>The scope of an interface's type parameter (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.1.2">9.1.2</a>) is the type parameter section of the interface declaration, the type parameter section of any superinterface of the interface declaration, and the interface body.</p>
+<p>The scope of a method's type parameter (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.4">8.4.4</a>) is the entire declaration of the method, including the type parameter section, but excluding the method modifiers.</p>
+<p>The scope of a constructor's type parameter (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8.4">8.8.4</a>) is the entire declaration of the constructor, including the type parameter section, but excluding the constructor modifiers.</p>
+<p>The scope of a local class declaration immediately enclosed by a block (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.2">14.2</a>) is the rest of the immediately enclosing block, including its own class declaration.</p>
+<p>The scope of a local class declaration immediately enclosed by a switch block statement group (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.11">14.11</a>) is the rest of the immediately enclosing switch block statement group, including its own class declaration.</p>
+<p>The scope of a local variable declaration in a block (<a href="#jls-14.4">14.4</a>)<strong>, including the local variable declaration implicitly provided by an enhanced <code>for</code> statement (<a href="#jls-14.4.2">14.4.2</a>),</strong> is the rest of the block in which the declaration appears, starting with its own initializer and including any further declarators to the right in the local variable declaration statement.</p>
+<p>The scope of a local variable declared in the <em>ForInit</em> part of a basic <code>for</code> statement (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.14.1">14.14.1</a>) includes all of the following:</p>
+<ul>
+<li><p>Its own initializer</p></li>
+<li><p>Any further declarators to the right in the <em>ForInit</em> part of the <code>for</code> statement</p></li>
+<li><p>The <em>Expression</em> and <em>ForUpdate</em> parts of the <code>for</code> statement</p></li>
+<li><p>The contained <em>Statement</em></p></li>
+</ul>
+<p><del>The scope of a local variable declared in the <em>FormalParameter</em> part of an enhanced <code>for</code> statement (<a href="#jls-14.14.2">14.14.2</a>) is the contained <em>Statement</em>.</del></p>
+<p>The scope of a parameter of an exception handler that is declared in a <code>catch</code> clause of a <code>try</code> statement (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.20">14.20</a>) is the entire block associated with the <code>catch</code>.</p>
+<p>The scope of a <strong>local</strong> variable declared in the <em>ResourceSpecification</em> of a <code>try</code>-with-resources statement (<a href="#jls-14.20.3">14.20.3</a>) is from the declaration rightward over the remainder of the <em>ResourceSpecification</em> and the entire <code>try</code> block associated with the <code>try</code>-with-resources statement.</p>
+<blockquote>
+<p>The translation of a <code>try</code>-with-resources statement implies the rule above.</p>
+</blockquote>
+<p><strong>The scope of a local variable declared by a pattern is defined below.</strong></p>
+<div class="example">
+<p>Example 6.3-1. Scope of Type Declarations</p>
+<p>These rules imply that declarations of class and interface types need not appear before uses of the types. In the following program, the use of <code>PointList</code> in class <code>Point</code> is valid, because the scope of the class declaration <code>PointList</code> includes both class <code>Point</code> and class <code>PointList</code>, as well as any other type declarations in other compilation units of package <code>points</code>.</p>
+<pre><code>package points;
+class Point {
+    int x, y;
+    PointList list;
+    Point next;
+}
+
+class PointList {
+    Point first;
+}</code></pre>
+</div>
+<div class="example">
+<p>Example 6.3-2. Scope of Local Variable Declarations</p>
+<p>The following program causes a compile-time error because the initialization of local variable <code>x</code> is within the scope of the declaration of local variable <code>x</code>, but the local variable <code>x</code> does not yet have a value and cannot be used. The field <code>x</code> has a value of <code>0</code> (assigned when <code>Test1</code> was initialized) but is a red herring since it is shadowed (<a href="#jls-6.4.1">6.4.1</a>) by the local variable <code>x</code>.</p>
+<pre><code>class Test1 {
+    static int x;
+    public static void main(String[] args) {
+        int x = x;
+    }
+}</code></pre>
+<p>The following program does compile:</p>
+<pre><code>class Test2 {
+    static int x;
+    public static void main(String[] args) {
+        int x = (x=2)*2;
+        System.out.println(x);
+    }
+}</code></pre>
+<p>because the local variable <code>x</code> is definitely assigned (<a href="#jls-16.html">16</a>) before it is used. It prints:</p>
+<pre><code>4</code></pre>
+<p>In the following program, the initializer for <code>three</code> can correctly refer to the variable <code>two</code> declared in an earlier declarator, and the method invocation in the next line can correctly refer to the variable <code>three</code> declared earlier in the block.</p>
+<pre><code>class Test3 {
+    public static void main(String[] args) {
+        System.out.print(&quot;2+1=&quot;);
+        int two = 2, three = two + 1;
+        System.out.println(three);
+    }
+}</code></pre>
+<p>This program produces the output:</p>
+<pre><code>2+1=3</code></pre>
+</div>
+<div class="inserted">
+<p>The scope of a pattern variable, a local variable declared by a pattern, is the part of the program that might be executed after pattern matching of a value against the pattern has succeeded (<a href="#jls-14.30.2">14.30.2</a>).</p>
+<blockquote>
+<p>The scope of a pattern variable is a flow dependent concept similar to definite assignment (Chapter <a href="#jls-16.html">16</a>). The rules that are defined in the rest of this section deliberately have a similar form to those used in Chapter <a href="#jls-16.html">16</a>.</p>
+</blockquote>
+<p>The scope of a pattern variable is determined by considering the program points where it is definitely matched in a region beginning with the pattern that declares the pattern variable.</p>
+<p>The remainder of this section is devoted to a precise explanation of the words &quot;definitely matched&quot;, for which we define three auxiliary technical terms:</p>
+<ul>
+<li>a pattern variable is <em>introduced by</em> an expression <em>when true</em>;</li>
+<li>a pattern variable is <em>introduced by</em> an expression <em>when false</em>; and</li>
+<li>a pattern variable is <em>introduced by</em> a statement.</li>
+</ul>
+<blockquote>
+<p>The analysis takes into account the structure of statements and expressions, with a special treatment for the boolean expression operators and certain statement forms.</p>
+<p>The simplest example is that the pattern variable <code>s</code> is <em>introduced by</em> the expression <code>a instanceof String s</code> <em>when true</em>. In other words, if the value of the expression is <code>true</code> then the pattern matching must have succeeded, and thus the pattern variable must have been assigned a value.</p>
+<p>In contrast, the pattern variable <code>t</code> is <em>introduced by</em> the expression <code>!(b instanceof Integer t)</code> <em>when false</em>. This is because the pattern matching could only have succeeded if the value of the expression is <code>false</code>.</p>
+<p>Pattern variables can, in certain circumstances, be introduced by a statement. Further details are given in <a href="#jls-6.3.2">6.3.2</a>.</p>
+</blockquote>
+</div>
+<h4 id="jls-6.3.1"><strong>6.3.1 Pattern Declaration Scopes and Expressions</strong></h4>
+<div class="inserted">
+<p>Only certain boolean expressions can introduce a new pattern variable into scope. If an expression is not a logical complement expression, conditional-and expression, conditional-or expression, conditional expression, <code>instanceof</code> operator, or a parenthesized expression then no rules apply regarding the introduction of pattern variables.</p>
+</div>
+<h5 id="jls-6.3.1.1"><strong>6.3.1.1 Conditional-And Operator <code>&amp;&amp;</code></strong></h5>
+<div class="inserted">
+<p>The following rules apply to a conditional-and expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.23">15.23</a>):</p>
+<ul>
+<li><em>V</em> is introduced by <code>a &amp;&amp; b</code> when true iff either
+<ul>
+<li><em>V</em> is introduced by <code>a</code> when true, or</li>
+<li><em>V</em> is introduced by <code>b</code> when true.</li>
+</ul>
+It is a compile-time error if both <em>V</em> is introduced by <code>a</code> when true, and <em>V</em> is introduced by <code>b</code> when true.</li>
+</ul>
+<!-- // Removed as we don't allow merging
+
+- _V_ is introduced by `a && b` when false iff both
+    - _V_ is introduced by `a` when false, and
+    - _V_ is introduced by `b` when false.
+-->
+<ul>
+<li><p>A pattern variable introduced by <code>a</code> when true is definitely matched at <code>b</code>.</p>
+<p>It is a compile-time error if any pattern variable introduced by <code>a</code> when true is already in scope at <code>b</code>.</p></li>
+</ul>
+<blockquote>
+<p>The first rule excludes the possibility of declaring a pattern variable in the scope of another declaration of a pattern variable of the same name.</p>
+<pre><code>if ((a instanceof String s) &amp;&amp; (b instanceof String s)) { // Error!
+    System.out.println(s);   
+}</code></pre>
+<p>The second rule means that a pattern variable introduced by the left-hand operand of a conditional-and operator is in scope, and can therefore be used, in the right-hand operand. This allows for expressions such as <code>x instanceof String s &amp;&amp; s.length() &gt; 0</code>.</p>
+</blockquote>
+<ul>
+<li>It is a compile-time error if a pattern variable is both introduced by <code>a</code> when false, and by <code>b</code> when false.</li>
+</ul>
+<!--
+  > This final case rules out an example such as the following where a pattern
+  > variable is declared in more than one place but these declarations are
+  > coalesced by the context:
+  >
+  > ```
+  > if (!(a instanceof T t) && !(b instanceof T t)) {
+  >     
+  > } else {
+  >     
+  > }
+  > ```
+  >
+  > As it stands the pattern variable `t` is not in scope in the second contained
+  > statement (the one after the `else`), but this may be relaxed in future
+  > versions of the language (provided the types are identical).
+-->
+</div>
+<h5 id="jls-6.3.1.2"><strong>6.3.1.2 Conditional-Or Operator <code>||</code></strong></h5>
+<div class="inserted">
+<p>The following rules apply to a conditional-or expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.24">15.24</a>):</p>
+<!-- // Removed as we don;t allow merging
+- _V_ is introduced by `a || b` when true iff both
+
+    - _V_ is introduced by `a` when true, and
+    - _V_ is introduced by `b` when true.
+-->
+<ul>
+<li><p><em>V</em> is introduced by <code>a || b</code> when false iff either</p>
+<ul>
+<li><em>V</em> is introduced by <code>a</code> when false, or</li>
+<li><em>V</em> is introduced by <code>b</code> when false.</li>
+</ul>
+<p>It is a compile-time error if both <em>V</em> is introduced by <code>a</code> when false, and <em>V</em> is introduced by <code>b</code> when false.</p></li>
+<li><p>A pattern variable introduced by <code>a</code> when false is definitely matched at <code>b</code>.</p>
+<p>It is a compile-time error if any pattern variable introduced by <code>a</code> when false is already in scope at <code>b</code>.</p></li>
+</ul>
+<!-- the following is needed for forwards compatibility with merging -->
+<ul>
+<li><p>It is a compile-time error if a pattern variable is both introduced by <code>a</code> when true, and by <code>b</code> when true.</p>
+<blockquote>
+<p>This final case rules out an example such as the following:</p>
+<pre><code>if ((a instanceof String t) || (b instanceof String t)) {
+   System.out.println(t); // Error!   
+}</code></pre>
+<p>As it stands the pattern variable <code>t</code> is not in scope in the first contained statement, but this may be relaxed in future versions of the language.</p>
+</blockquote></li>
+</ul>
+</div>
+<h5 id="jls-6.3.1.3"><strong>6.3.1.3 Logical Complement Operator <code>!</code></strong></h5>
+<div class="inserted">
+<p>The following rules apply to a logical complement expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.15.6">15.15.6</a>):</p>
+<ul>
+<li><p><em>V</em> is introduced by <code>!a</code> when true iff <em>V</em> is introduced by <code>a</code> when false.</p></li>
+<li><p><em>V</em> is introduced by <code>!a</code> when false iff <em>V</em> is introduced by <code>a</code> when true.</p></li>
+</ul>
+</div>
+<h5 id="jls-6.3.1.4"><strong>6.3.1.4 Conditional Operator <code>? :</code></strong></h5>
+<div class="inserted">
+<p>The following rules apply to a conditional expression <code>a ? b : c</code> (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.25">15.25</a>):</p>
+<ul>
+<li><p>A pattern variable introduced by <code>a</code> when true is definitely matched at <code>b</code>.</p>
+<p>It is a compile-time error if any pattern variable introduced by <code>a</code> when true is already in scope at <code>b</code>.</p></li>
+<li><p>A pattern variable introduced by <code>a</code> when false is definitely matched at <code>c</code>.</p>
+<p>It is a compile-time error if any pattern variable introduced by <code>a</code> when false is already in scope at <code>c</code>.</p></li>
+<li><p>It is a compile-time error if any of the following conditions hold:</p>
+<ul>
+<li><p>A pattern variable is introduced both by <code>a</code> when true, and by <code>c</code> when true.</p></li>
+<li><p>A pattern variable is introduced both by <code>a</code> when false, and by <code>b</code> when true.</p></li>
+<li><p>A pattern variable is introduced both by <code>b</code> when true, and by <code>c</code> when true.</p></li>
+<li><p>A pattern variable is introduced both by <code>a</code> when true, and by <code>c</code> when false.</p></li>
+<li><p>A pattern variable is introduced both by <code>a</code> when false, and by <code>b</code> when false.</p></li>
+<li><p>A pattern variable is introduced both by <code>b</code> when false, and by <code>c</code> when false.</p></li>
+</ul>
+<blockquote>
+<p>These final cases are to rule out cases of the introduction of pattern variables that may be supported in future versions of the language.</p>
+</blockquote></li>
+</ul>
+</div>
+<h5 id="jls-6.3.1.5"><strong>6.3.1.5 <code>instanceof</code> Operator</strong></h5>
+<div class="inserted">
+<p>The following rule applies to an <code>instanceof</code> expression (<a href="#jls-15.20.2">15.20.2</a>):</p>
+<ul>
+<li><p><em>V</em> is introduced by <code>a instanceof p</code> when true iff <em>V</em> is declared by pattern <code>p</code>. (The rules for determining which pattern variables are declared by a pattern are given in <a href="#jls-14.30.1">14.30.1</a>.)</p>
+<p>It is a compile-time error if any pattern variable introduced by the pattern <code>p</code> is already in scope at the <code>instanceof</code> expression.</p></li>
+</ul>
+<blockquote>
+<p>Note that no pattern variable is introduced by an expression <code>a instanceof p</code> when false.</p>
+</blockquote>
+</div>
+<h5 id="jls-6.3.1.6"><strong>6.3.1.6 <code>switch</code> Expressions</strong></h5>
+<div class="inserted">
+<p>The following rule covers the <code>switch</code> expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.28">15.28</a>).</p>
+<ul>
+<li>A pattern variable introduced by a statement <em>S</em> contained in a switch labeled statement group (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.11.1">14.11.1</a>) is definitely matched at all the statements following <em>S</em>, if any, in the switch labeled statement group.</li>
+</ul>
+</div>
+<h5 id="jls-6.3.1.7"><strong>6.3.1.7 Parenthesized Expressions</strong></h5>
+<div class="inserted">
+<p>The following rules cover the parenthesized expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.8.5">15.8.5</a>).</p>
+<ul>
+<li><p>A pattern variable is introduced by <code>(a)</code> when true if and only if it is introduced by <code>a</code> when true.</p></li>
+<li><p>A pattern variable is introduced by <code>(a)</code> when false if and only if it is introduced by <code>a</code> when false.</p></li>
+</ul>
+</div>
+<h4 id="jls-6.3.2"><strong>6.3.2 Pattern Declaration Scopes and Statements</strong></h4>
+<div class="inserted">
+<p>Only a few statements play a significant role in determining the scope of pattern variables.</p>
+<p>The scope of pattern variables declared in expressions contained within <code>if</code>, <code>while</code>, <code>do</code>, and <code>for</code> statements can, in certain circumstances, include other contained statements. Here is an example:</p>
+<pre><code>if (x instanceof String s)
+    // String s in scope for this contained statement
+    // No explicit cast needed here!
+    System.out.println(&quot;The string value was: &quot; + s);
+else 
+    // String s not in scope for this contained statement
+    System.out.println(s); // Compile-time error!</code></pre>
+<p>In certain constrained circumstances, a pattern variable can be introduced by a statement. In this case, the pattern variable is in scope at the following statements in the enclosing block. Here is an example:</p>
+<pre><code>public void RequiresAString(Object o) {
+    if (!(o instanceof String s)) {
+        throw new IllegalArgumentException();
+    }
+    // Only reachable if the pattern match succeeded
+    // String s is thus in scope for the rest of the block
+    System.out.println(&quot;The parameter string was: &quot; + s);
+    ...
+}
+</code></pre>
+</div>
+<h5 id="jls-6.3.2.1"><strong>6.3.2.1 Blocks</strong></h5>
+<div class="inserted">
+<p>The following rule applies to a block statement <em>S</em> contained in a block that is not a switch block:</p>
+<ul>
+<li>A pattern variable introduced by <em>S</em> is definitely matched at all the block statements following <em>S</em>, if any, in the block.</li>
+</ul>
+</div>
+<h5 id="jls-6.3.2.2"><strong>6.3.2.2 <code>if</code> Statements</strong></h5>
+<div class="inserted">
+<p>The following rules apply to a statement <code>if (e) S</code> (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-14.9.1">14.9.1</a>):</p>
+<ul>
+<li><p>A pattern variable introduced by <code>e</code> when true is definitely matched at <code>S</code>.</p>
+<p>It is a compile-time error if any pattern variable introduced by <code>e</code> when true is already in scope at <code>S</code>.</p></li>
+<li><p><em>V</em> is introduced by <code>if (e) S</code> iff <em>V</em> is introduced by <code>e</code> when false and <code>S</code> cannot complete normally.</p>
+<p>It is a compile-time error if any pattern variable introduced by the <code>if</code> statement is already in scope.</p></li>
+</ul>
+<blockquote>
+<p>The second rule makes use of the notion of 'cannot complete normally' (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.21">14.21</a>), which itself makes use of the concept of a constant expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.29">15.29</a>). This means that calculating the scope of a pattern variable may require determining whether a simple name, or a qualified name of the form <em>TypeName</em><code>.</code> <em>Identifier</em>, refers to a constant variable. As pattern variables can never refer to a constant variable, there is no circularity.</p>
+</blockquote>
+<p>The following rules apply to a statement <code>if (e) S else T</code> (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-14.9.2">14.9.2</a>):</p>
+<ul>
+<li><p>A pattern variable introduced by <code>e</code> when true is definitely matched at <code>S</code>.</p>
+<p>It is a compile-time error if any pattern variable introduced by <code>e</code> when true is already in scope at <code>S</code>.</p></li>
+<li><p>A pattern variable introduced by <code>e</code> when false is definitely matched at <code>T</code>.</p>
+<p>It is a compile-time error if any pattern variable introduced by <code>e</code> when false is already in scope at <code>T</code>.</p></li>
+<li><em>V</em> is introduced by <code>if (e) S else T</code> iff either:
+<ul>
+<li><em>V</em> is introduced by <code>e</code> when true, <code>S</code> can complete normally, and <code>T</code> cannot complete normally; or</li>
+<li><em>V</em> is introduced by <code>e</code> when false, <code>S</code> cannot complete normally, and <code>T</code> can complete normally.</li>
+</ul>
+<p>It is a compile-time error if any pattern variable introduced by the <code>if</code> statement is already in scope.</p></li>
+</ul>
+<blockquote>
+<p>These rules highlight the flow-like nature of scoping for pattern variables. In the following statement:</p>
+</blockquote>
+<blockquote>
+<pre><code>if (e instanceof String s) {
+  counter += s.length();
+} else {
+  ...   // s not in scope
+}</code></pre>
+</blockquote>
+<blockquote>
+<p>The pattern variable <code>s</code> is introduced by the <code>instanceof</code> operator and is in scope in the first contained statement (the one before the <code>else</code> keyword), but it is <em>not</em> in scope in the second contained statement (the one after the <code>else</code> keyword).</p>
+</blockquote>
+<blockquote>
+<p>Moreover, combined with the treatment for the boolean expressions, the scope of pattern variables is robust against code refactorings that exploit the familar boolean logical equivalences. For example, the previous code can be rewritten as:</p>
+</blockquote>
+<blockquote>
+<pre><code>if (!(e instanceof String s)) {
+  ...   // s not in scope
+} else {
+  counter += s.length();
+}</code></pre>
+<p>And, furthermore, can be rewritten as:</p>
+</blockquote>
+<blockquote>
+<pre><code>if (!!(e instanceof String s)) {
+  counter += s.length();
+} else {
+  ...   // s not in scope
+}</code></pre>
+</blockquote>
+</div>
+<h5 id="jls-6.3.2.3"><strong>6.3.2.3 <code>while</code> Statements</strong></h5>
+<div class="inserted">
+<p>The following rules apply to a statement <code>while (e) S</code> (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-14.12">14.12</a>):</p>
+<ul>
+<li><p>A pattern variable introduced by <code>e</code> when true is definitely matched at <code>S</code>.</p>
+<p>It is a compile-time error if any pattern variable introduced by <code>e</code> when true is already in scope at <code>S</code>.</p></li>
+<li><p><em>V</em> is introduced by <code>while (e) S</code> iff <em>V</em> is introduced by <code>e</code> when false, and <em>S</em> does not contains a reachable <code>break</code> statement whose break target contains <em>S</em>.</p>
+<p>It is a compile-time error if any pattern variable introduced by the <code>while</code> statement is already in scope.</p></li>
+</ul>
+</div>
+<h5 id="jls-6.3.2.4"><strong>6.3.2.4 <code>do</code> Statements</strong></h5>
+<div class="inserted">
+<p>The following rule applies to a statement <code>do S while (e)</code> (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-14.13">14.13</a>):</p>
+<ul>
+<li><p><em>V</em> is introduced by <code>do S while (e)</code> iff <em>V</em> is introduced by <code>e</code> when false, and <code>S</code> does not contain a reachable <code>break</code> statement whose break target contains <code>S</code>.</p>
+<p>It is a compile-time error if any pattern variable introduced by the <code>do</code> statement is already in scope.</p></li>
+</ul>
+</div>
+<h5 id="jls-6.3.2.5"><strong>6.3.2.5 <code>for</code> Statements</strong></h5>
+<div class="inserted">
+<p>The following rules cover the basic <code>for</code> statement (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.14.1">14.14.1</a>). Since the enhanced <code>for</code> statement (<a href="#jls-14.14.2">14.14.2</a>) is defined by translation to a basic <code>for</code> statement, no special rules need to be provided for it.</p>
+<ul>
+<li><p>A pattern variable introduced by the condition expression when true is definitely matched at both the incrementation part and the contained statement.</p>
+<p>It is a compile-time error if any pattern variable introduced by the condition expression is already in scope at the incrementation part or the contained statement.</p></li>
+<li><p><em>V</em> is introduced by a <code>for</code> statement iff <em>V</em> is introduced by the condition expression when false, and the contained statement, <em>S</em>, does not contain a reachable <code>break</code> statement whose break target contains <em>S</em>.</p>
+<p>It is a compile-time error if any pattern variable introduced by a <code>for</code> statement is already in scope.</p></li>
+</ul>
+</div>
+<h5 id="jls-6.3.2.6"><strong>6.3.2.6 <code>switch</code> Statements</strong></h5>
+<div class="inserted">
+<p>The following rule covers the <code>switch</code> statement (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.11">14.11</a>).</p>
+<ul>
+<li>A pattern variable is introduced by a labeled statement <em>S</em> contained in a switch block statement group (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.11">14.11</a>) is definitely matched at all the statements following <em>S</em>, if any, in the switch block statement group.</li>
+</ul>
+</div>
+<h5 id="jls-6.3.2.7"><strong>6.3.2.7 Labeled Statements</strong></h5>
+<div class="inserted">
+<p>The following rule covers the labeled statement (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.7">14.7</a>).</p>
+<ul>
+<li>A pattern variable is introduced by a labeled statement if and only if it is introduced by its immediately contained <em>Statement</em>.</li>
+</ul>
+</div>
+<h3 id="jls-6.4">6.4 Shadowing and Obscuring</h3>
+<p>A local variable (<a href="#jls-14.4">14.4</a><strong>, <a href="#jls-14.30">14.30</a></strong>), formal parameter (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.1">8.4.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.27.1">15.27.1</a>), exception parameter (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.20">14.20</a>), and local class (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.3">14.3</a>) can only be referred to using a simple name, not a qualified name (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-6.html#jls-6.2">6.2</a>).</p>
+<p>Some declarations are not permitted within the scope of a local variable, formal parameter, exception parameter, or local class declaration because it would be impossible to distinguish between the declared entities using only simple names.</p>
+<blockquote>
+<p>For example, if the name of a formal parameter of a method could be redeclared as the name of a local variable in the method body, then the local variable would shadow the formal parameter and there would be no way to refer to the formal parameter - an undesirable outcome.</p>
+</blockquote>
+<p>It is a compile-time error if the name of a formal parameter is used to declare a new variable within the body of the method, constructor, or lambda expression, unless the new variable is declared within a class declaration contained by the method, constructor, or lambda expression.</p>
+<p>It is a compile-time error if the name of a local variable <em>v</em> is used to declare a new variable within the scope of <em>v</em>, unless the new variable is declared within a class whose declaration is within the scope of <em>v</em>.</p>
+<p>It is a compile-time error if the name of an exception parameter is used to declare a new variable within the <em>Block</em> of the <code>catch</code> clause, unless the new variable is declared within a class declaration contained by the <em>Block</em> of the <code>catch</code> clause.</p>
+<p>It is a compile-time error if the name of a local class <em>C</em> is used to declare a new local class within the scope of <em>C</em>, unless the new local class is declared within another class whose declaration is within the scope of <em>C</em>.</p>
+<blockquote>
+<p>These rules allow redeclaration of a variable or local class in nested class declarations that occur in the scope of the variable or local class; such nested class declarations may be local classes (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.3">14.3</a>) or anonymous classes (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.9">15.9</a>). Thus, the declaration of a formal parameter, local variable, or local class may be shadowed in a class declaration nested within a method, constructor, or lambda expression; and the declaration of an exception parameter may be shadowed in a class declaration nested within the <em>Block</em> of the <code>catch</code> clause.</p>
+</blockquote>
+<blockquote>
+<p>There are two design alternatives for handling name clashes created by lambda parameters and other variables declared in lambda expressions. One is to mimic class declarations: like local classes, lambda expressions introduce a new &quot;level&quot; for names, and all variable names outside the expression can be redeclared. Another is a &quot;local&quot; strategy: like <code>catch</code> clauses, <code>for</code> loops, and blocks, lambda expressions operate at the same &quot;level&quot; as the enclosing context, and local variables outside the expression cannot be shadowed. The above rules use the local strategy; there is no special dispensation that allows a variable declared in a lambda expression to shadow a variable declared in an enclosing method.</p>
+</blockquote>
+<blockquote>
+<p>Note that the rule for local classes does not make an exception for a class of the same name declared within the local class itself. However, this case is prohibited by a separate rule: a class cannot have the same name as a class that encloses it (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.1">8.1</a>).</p>
+</blockquote>
+<div class="example">
+<p>Example 6.4-1. Attempted Shadowing Of A Local Variable</p>
+<p>Because a declaration of an identifier as a local variable of a method, constructor, or initializer block must not appear within the scope of a parameter or local variable of the same name, a compile-time error occurs for the following program:</p>
+<pre><code>class Test1 {
+    public static void main(String[] args) {
+        int i;
+        for (int i = 0; i &lt; 10; i++)
+            System.out.println(i);
+    }
+}</code></pre>
+<p>This restriction helps to detect some otherwise very obscure bugs. A similar restriction on shadowing of members by local variables was judged impractical, because the addition of a member in a superclass could cause subclasses to have to rename local variables. Related considerations make restrictions on shadowing of local variables by members of nested classes, or on shadowing of local variables by local variables declared within nested classes unattractive as well.</p>
+<p>Hence, the following program compiles without error:</p>
+<pre><code>class Test2 {
+    public static void main(String[] args) {
+        int i;
+        class Local {
+            {
+                for (int i = 0; i &lt; 10; i++)
+                    System.out.println(i);
+            }
+        }
+        new Local();
+    }
+}</code></pre>
+<p>On the other hand, local variables with the same name may be declared in two separate blocks or <code>for</code> statements, neither of which contains the other:</p>
+<pre><code>class Test3 {
+    public static void main(String[] args) {
+        for (int i = 0; i &lt; 10; i++)
+            System.out.print(i + &quot; &quot;);
+        for (int i = 10; i &gt; 0; i--)
+            System.out.print(i + &quot; &quot;);
+        System.out.println();
+    }
+}</code></pre>
+<p>This program compiles without error and, when executed, produces the output:</p>
+<pre><code>0 1 2 3 4 5 6 7 8 9 10 9 8 7 6 5 4 3 2 1</code></pre>
+<div class="inserted">
+<p>This style is also common with pattern matching, where repeated patterns often employ the same name:</p>
+<pre><code>class Test4 {
+    class Point {
+        int x, y;
+    }
+    public static void test(Object a, Object b, Object c) {
+        if (a instanceof Point p) {
+            System.out.print(&quot;a is a point (&quot; + p.x + &quot;, &quot; + p.y);
+        }
+        if (b instanceof Point p){
+            System.out.print(&quot;b is a point (&quot; + p.x + &quot;, &quot; + p.y);
+        } else if (c instanceof Point p) {
+            System.out.print(&quot;c is a point (&quot; + p.x + &quot;, &quot; + p.y);
+        }
+        System.out.println();
+    }
+}</code></pre>
+<p>However, pattern variables are not allowed to shadow other pattern variables; a compile-time error occurs for the following program:</p>
+<pre><code>class Test5 {
+    public static void test(Object a, Object b, Object c) {
+        if (a instanceof Point p) {
+            System.out.print(&quot;a is a point (&quot; + p.x + &quot;, &quot; + p.y);
+            if (b instanceof Point p){    // Error
+                System.out.print(&quot;b is a point (&quot; + p.x + &quot;, &quot; + p.y); 
+            }
+        }
+        System.out.println();
+    }
+}</code></pre>
+<p>Pattern variables are not allowed to shadow other local variables; a compile-time error occurs for the following program:</p>
+<pre><code>class Test6 {
+    class Point {
+        int x, y;
+        Point(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+    }
+    public static void test(Object o) {
+        Point p = new Point(0,0);
+        if (o instanceof Point p)    // Error
+            System.out.println(&quot;I get your point&quot;);
+    }
+}</code></pre>
+</div>
+</div>
+<h3 id="jls-6.5">6.5 Determining the Meaning of a Name</h3>
+<h4 id="jls-6.5.1">6.5.1 Syntactic Classification of a Name According to Context</h4>
+<p>A name is syntactically classified as a <em>ModuleName</em> in these contexts:</p>
+<ul>
+<li><p>In a <code>requires</code> directive in a module declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.7.1">7.7.1</a>)</p></li>
+<li><p>To the right of <code>to</code> in an <code>exports</code> or <code>opens</code> directive in a module declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.7.2">7.7.2</a>)</p></li>
+</ul>
+<p>A name is syntactically classified as a <em>PackageName</em> in these contexts:</p>
+<ul>
+<li><p>To the right of <code>exports</code> or <code>opens</code> in a module declaration</p></li>
+<li><p>To the left of the &quot;<code>.</code>&quot; in a qualified <em>PackageName</em></p></li>
+</ul>
+<p>A name is syntactically classified as a <em>TypeName</em> in these contexts:</p>
+<ul>
+<li><p>The first eleven non-generic contexts (<a href="#jls-6.1">6.1</a>):</p>
+<ol type="1">
+<li><p>In a <code>uses</code> or <code>provides</code> directive in a module declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.7.1">7.7.1</a>)</p></li>
+<li><p>In a single-type-import declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.5.1">7.5.1</a>)</p></li>
+<li><p>To the left of the <code>.</code> in a single-static-import declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.5.3">7.5.3</a>)</p></li>
+<li><p>To the left of the <code>.</code> in a static-import-on-demand declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.5.4">7.5.4</a>)</p></li>
+<li><p>To the left of the <code>(</code> in a constructor declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8">8.8</a>)</p></li>
+<li><p>After the <code>@</code> sign in an annotation (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.7">9.7</a>)</p></li>
+<li><p>To the left of <code>.class</code> in a class literal (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.8.2">15.8.2</a>)</p></li>
+<li><p>To the left of <code>.this</code> in a qualified <code>this</code> expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.8.4">15.8.4</a>)</p></li>
+<li><p>To the left of <code>.super</code> in a qualified superclass field access expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.11.2">15.11.2</a>)</p></li>
+<li><p>To the left of <code>.</code><em>Identifier</em> or <code>.super.</code><em>Identifier</em> in a qualified method invocation expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.12">15.12</a>)</p></li>
+<li><p>To the left of <code>.super::</code> in a method reference expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.13">15.13</a>)</p></li>
+</ol></li>
+<li><p>As the <em>Identifier</em> or dotted <em>Identifier</em> sequence that constitutes any <em>ReferenceType</em> (including a <em>ReferenceType</em> to the left of the brackets in an array type, or to the left of the &lt; in a parameterized type, or in a non-wildcard type argument of a parameterized type, or in an <code>extends</code> or <code>super</code> clause of a wildcard type argument of a parameterized type) in the 16 contexts where types are used (<a href="#jls-4.11">4.11</a>):</p>
+<ol type="1">
+<li><p>In an <code>extends</code> or <code>implements</code> clause of a class declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.1.4">8.1.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.1.5">8.1.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.5">8.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.5">9.5</a>)</p></li>
+<li><p>In an <code>extends</code> clause of an interface declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.1.3">9.1.3</a>)</p></li>
+<li><p>The return type of a method (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4">8.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.4">9.4</a>) (including the type of an element of an annotation type (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.6.1">9.6.1</a>))</p></li>
+<li><p>In the <code>throws</code> clause of a method or constructor (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.6">8.4.6</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8.5">8.8.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.4">9.4</a>)</p></li>
+<li><p>In an <code>extends</code> clause of a type parameter declaration of a generic class, interface, method, or constructor (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.1.2">8.1.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.1.2">9.1.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.4">8.4.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8.4">8.8.4</a>)</p></li>
+<li><p>The type in a field declaration of a class or interface (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.3">8.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.3">9.3</a>)</p></li>
+<li><p>The type in a formal parameter declaration of a method, constructor, or lambda expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.1">8.4.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8.1">8.8.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.4">9.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.27.1">15.27.1</a>)</p></li>
+<li><p>The type of the receiver parameter of a method (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4">8.4</a>)</p></li>
+<li><p>The type in a local variable declaration, enhanced <code>for</code> statement header, or pattern (<a href="#jls-14.4">14.4</a>, <del><a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.14.1">14.14.1</a>,</del> <a href="#jls-14.14.2">14.14.2</a>, <del><a href="#jls-14.20.3">14.20.3</a></del> <strong><a href="#jls-14.30">14.30</a></strong>)</p></li>
+<li><p>A type in an exception parameter declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.20">14.20</a>)</p></li>
+<li><p>In an explicit type argument list to an explicit constructor invocation statement or class instance creation expression or method invocation expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8.7.1">8.8.7.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.9">15.9</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.12">15.12</a>)</p></li>
+<li><p>In an unqualified class instance creation expression, either as the class type to be instantiated (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.9">15.9</a>) or as the direct superclass or direct superinterface of an anonymous class to be instantiated (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.9.5">15.9.5</a>)</p></li>
+<li><p>The element type in an array creation expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.10.1">15.10.1</a>)</p></li>
+<li><p>The type in the cast operator of a cast expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.16">15.16</a>)</p></li>
+<li><p>The type that follows the <code>instanceof</code> relational operator (<a href="#jls-15.20.2">15.20.2</a>)</p></li>
+<li><p>In a method reference expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.13">15.13</a>), as the reference type to search for a member method or as the class type or array type to construct.</p></li>
+</ol></li>
+</ul>
+<blockquote>
+<p>The extraction of a <em>TypeName</em> from the identifiers of a <em>ReferenceType</em> in the 16 contexts above is intended to apply recursively to all sub-terms of the <em>ReferenceType</em>, such as its element type and any type arguments.</p>
+<p>For example, suppose a field declaration uses the type <code>p.q.Foo[]</code>. The brackets of the array type are ignored, and the term <code>p.q.Foo</code> is extracted as a dotted sequence of <em>Identifiers</em> to the left of the brackets in an array type, and classified as a <em>TypeName</em>. A later step determines which of <code>p</code>, <code>q</code>, and <code>Foo</code> is a type name or a package name.</p>
+<p>As another example, suppose a cast operator uses the type <code>p.q.Foo&lt;? extends String&gt;</code>. The term <code>p.q.Foo</code> is again extracted as a dotted sequence of <em>Identifier</em> terms, this time to the left of the <code>&lt;</code> in a parameterized type, and classified as a <em>TypeName</em>. The term <code>String</code> is extracted as an <em>Identifier</em> in an <code>extends</code> clause of a wildcard type argument of a parameterized type, and classified as a <em>TypeName</em>.</p>
+</blockquote>
+<p>A name is syntactically classified as an <em>ExpressionName</em> in these contexts:</p>
+<ul>
+<li><p>As the qualifying expression in a qualified superclass constructor invocation (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8.7.1">8.8.7.1</a>)</p></li>
+<li><p>As the qualifying expression in a qualified class instance creation expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.9">15.9</a>)</p></li>
+<li><p>As the array reference expression in an array access expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.10.3">15.10.3</a>)</p></li>
+<li><p>As a <em>PostfixExpression</em> (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.14">15.14</a>)</p></li>
+<li><p>As the left-hand operand of an assignment operator (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.26">15.26</a>)</p></li>
+<li><p>As a <em>VariableAccess</em> in a <code>try</code>-with-resources statement (<a href="#jls-14.20.3">14.20.3</a>)</p></li>
+</ul>
+<p>A name is syntactically classified as a <em>MethodName</em> in this context:</p>
+<ul>
+<li>Before the &quot;<code>(</code>&quot; in a method invocation expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.12">15.12</a>)</li>
+</ul>
+<p>A name is syntactically classified as a <em>PackageOrTypeName</em> in these contexts:</p>
+<ul>
+<li><p>To the left of the &quot;<code>.</code>&quot; in a qualified <em>TypeName</em></p></li>
+<li><p>In a type-import-on-demand declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.5.2">7.5.2</a>)</p></li>
+</ul>
+<p>A name is syntactically classified as an <em>AmbiguousName</em> in these contexts:</p>
+<ul>
+<li><p>To the left of the &quot;<code>.</code>&quot; in a qualified <em>ExpressionName</em></p></li>
+<li><p>To the left of the rightmost <code>.</code> that occurs before the &quot;<code>(</code>&quot; in a method invocation expression</p></li>
+<li><p>To the left of the &quot;<code>.</code>&quot; in a qualified <em>AmbiguousName</em></p></li>
+<li><p>In the default value clause of an annotation type element declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.6.2">9.6.2</a>)</p></li>
+<li><p>To the right of an &quot;<code>=</code>&quot; in an an element-value pair (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.7.1">9.7.1</a>)</p></li>
+<li><p>To the left of <code>::</code> in a method reference expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.13">15.13</a>)</p></li>
+</ul>
+<blockquote>
+<p>The effect of syntactic classification is to restrict certain kinds of entities to certain parts of expressions:</p>
+</blockquote>
+<blockquote>
+<ul>
+<li><p>The name of a field, parameter, or local variable may be used as an expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.14.1">15.14.1</a>).</p></li>
+<li><p>The name of a method may appear in an expression only as part of a method invocation expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.12">15.12</a>).</p></li>
+<li><p>The name of a class or interface type may appear in an expression only as part of a class literal (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.8.2">15.8.2</a>), a qualified <code>this</code> expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.8.4">15.8.4</a>), a class instance creation expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.9">15.9</a>), an array creation expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.10.1">15.10.1</a>), a cast expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.16">15.16</a>), an <code>instanceof</code> expression (<a href="#jls-15.20.2">15.20.2</a>), an enum constant (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.9">8.9</a>), or as part of a qualified name for a field or method.</p></li>
+<li><p>The name of a package may appear in an expression only as part of a qualified name for a class or interface type.</p></li>
+</ul>
+</blockquote>
+<h4 id="jls-6.5.2">6.5.2 Reclassification of Contextually Ambiguous Names</h4>
+<p>An <em>AmbiguousName</em> is then reclassified as follows.</p>
+<p>If the <em>AmbiguousName</em> is a simple name, consisting of a single <em>Identifier</em>:</p>
+<ul>
+<li><p>If the <em>Identifier</em> appears within the scope (<a href="#jls-6.3">6.3</a>) of a local variable declaration (<a href="#jls-14.4">14.4</a><strong>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.14">14.14</a>, <a href="#jls-14.20.3">14.20.3</a>, <a href="#jls-14.30">14.30</a></strong>) or parameter declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.1">8.4.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8.1">8.8.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.20">14.20</a>) or field declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.3">8.3</a>) with that name, then the <em>AmbiguousName</em> is reclassified as an <em>ExpressionName</em>.</p></li>
+<li><p>Otherwise, if a field of that name is declared in the compilation unit (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.3">7.3</a>) containing the <em>Identifier</em> by a single-static-import declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.5.3">7.5.3</a>), or by a static-import-on-demand declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.5.4">7.5.4</a>) then the <em>AmbiguousName</em> is reclassified as an <em>ExpressionName</em>.</p></li>
+<li><p>Otherwise, if the <em>Identifier</em> is a valid <em>TypeIdentifier</em> and appears within the scope (<a href="#jls-6.3">6.3</a>) of a top level class (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html">8</a>) or interface type declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html">9</a>), a local class declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.3">14.3</a>) or member type declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.5">8.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.5">9.5</a>) with that name, then the <em>AmbiguousName</em> is reclassified as a <em>TypeName</em>.</p></li>
+<li><p>Otherwise, if the <em>Identifier</em> is a valid <em>TypeIdentifier</em> and a type of that name is declared in the compilation unit (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.3">7.3</a>) containing the <em>Identifier</em>, either by a single-type-import declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.5.1">7.5.1</a>), or by a type-import-on-demand declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.5.2">7.5.2</a>), or by a single-static-import declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.5.3">7.5.3</a>), or by a static-import-on-demand declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.5.4">7.5.4</a>), then the <em>AmbiguousName</em> is reclassified as a <em>TypeName</em>.</p></li>
+<li><p>Otherwise, the <em>AmbiguousName</em> is reclassified as a <em>PackageName</em>. A later step determines whether or not a package of that name actually exists.</p></li>
+</ul>
+<p>...</p>
+<h2 id="jls-9">Chapter 9: Interfaces</h2>
+<h3 id="jls-9.6">9.6 Annotation Types</h3>
+<h4 id="jls-9.6.4">9.6.4 Predefined Annotation Types</h4>
+<h5 id="jls-9.6.4.1">9.6.4.1 <code>@Target</code></h5>
+<p>An annotation of type <code>java.lang.annotation.Target</code> is used on the declaration of an annotation type <em>T</em> to specify the contexts in which <em>T</em> is <em>applicable</em>. <code>java.lang.annotation.Target</code> has a single element, <code>value</code>, of type <code>java.lang.annotation.ElementType[]</code>, to specify contexts.</p>
+<p>Annotation types may be applicable in <em>declaration contexts</em>, where annotations apply to declarations, or in <em>type contexts</em>, where annotations apply to types used in declarations and expressions.</p>
+<p>There are nine declaration contexts, each corresponding to an enum constant of <code>java.lang.annotation.ElementType</code>:</p>
+<ol type="1">
+<li><p>Module declarations (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.7">7.7</a>)</p>
+<p>Corresponds to <code>java.lang.annotation.ElementType.MODULE</code></p></li>
+<li><p>Package declarations (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-7.html#jls-7.4.1">7.4.1</a>)</p>
+<p>Corresponds to <code>java.lang.annotation.ElementType.PACKAGE</code></p></li>
+<li><p>Type declarations: class, interface, enum, and annotation type declarations (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.1.1">8.1.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.1.1">9.1.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.5">8.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.5">9.5</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.9">8.9</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.6">9.6</a>)</p>
+<p>Corresponds to <code>java.lang.annotation.ElementType.TYPE</code></p>
+<p>Additionally, annotation type declarations correspond to <code>java.lang.annotation.ElementType.ANNOTATION_TYPE</code></p></li>
+<li><p>Method declarations (including elements of annotation types) (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.3">8.4.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.4">9.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.6.1">9.6.1</a>)</p>
+<p>Corresponds to <code>java.lang.annotation.ElementType.METHOD</code></p></li>
+<li><p>Constructor declarations (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8.3">8.8.3</a>)</p>
+<p>Corresponds to <code>java.lang.annotation.ElementType.CONSTRUCTOR</code></p></li>
+<li><p>Type parameter declarations of generic classes, interfaces, methods, and constructors (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.1.2">8.1.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.1.2">9.1.2</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.4">8.4.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.8.4">8.8.4</a>)</p>
+<p>Corresponds to <code>java.lang.annotation.ElementType.TYPE_PARAMETER</code></p></li>
+<li><p>Field declarations (including enum constants) (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.3.1">8.3.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.3">9.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.9.1">8.9.1</a>)</p>
+<p>Corresponds to <code>java.lang.annotation.ElementType.FIELD</code></p></li>
+<li><p>Formal and exception parameter declarations (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.1">8.4.1</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.4">9.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.20">14.20</a>)</p>
+<p>Corresponds to <code>java.lang.annotation.ElementType.PARAMETER</code></p></li>
+<li><p>Local variable declarations (including loop variables of <strong>enhanced</strong> <code>for</code> statements <del>and resource variables of <code>try</code>-with-resources statements</del>) <strong>and patterns</strong> (<a href="#jls-14.4">14.4</a>, <del><a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.14.1">14.14.1</a>,</del> <a href="#jls-14.14.2">14.14.2</a>, <del><a href="#jls-14.20.3">14.20.3</a></del> <strong><a href="#jls-14.30">14.30</a></strong>)</p>
+<p>Corresponds to <code>java.lang.annotation.ElementType.LOCAL_VARIABLE</code></p></li>
+</ol>
+<p>There are 16 type contexts (<a href="#jls-4.11">4.11</a>), all represented by the enum constant <code>TYPE_USE</code> of <code>java.lang.annotation.ElementType</code>.</p>
+<p>It is a compile-time error if the same enum constant appears more than once in the <code>value</code> element of an annotation of type <code>java.lang.annotation.Target</code>.</p>
+<p>If an annotation of type <code>java.lang.annotation.Target</code> is not present on the declaration of an annotation type <em>T</em>, then <em>T</em> is applicable in all nine declaration contexts and in all 16 type contexts.</p>
+<h4 id="jls-9.7.4">9.7.4 Where Annotations May Appear</h4>
+<p>A <em>declaration annotation</em> is an annotation that applies to a declaration, and whose own type is applicable in the declaration context (<a href="#jls-9.6.4.1">9.6.4.1</a>) represented by that declaration; or an annotation that applies to a class, interface, enum, annotation type, or type parameter declaration, and whose own type is applicable in type contexts (<a href="#jls-4.11">4.11</a>).</p>
+<p>A <em>type annotation</em> is an annotation that applies to a type (or any part of a type), and whose own type is applicable in type contexts.</p>
+<blockquote>
+<p>For example, given the field declaration:</p>
+<pre><code>@Foo int f;</code></pre>
+<p><code>@Foo</code> is a declaration annotation on <code>f</code> if <code>Foo</code> is meta-annotated by <code>@Target(ElementType.FIELD)</code>, and a type annotation on <code>int</code> if <code>Foo</code> is meta-annotated by <code>@Target(ElementType.TYPE_USE)</code>. It is possible for <code>@Foo</code> to be both a declaration annotation and a type annotation simultaneously.</p>
+<p>Type annotations can apply to an array type or any component type thereof (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-10.html#jls-10.1">10.1</a>). For example, assuming that <code>A</code>, <code>B</code>, and <code>C</code> are annotation types meta-annotated with <code>@Target(ElementType.TYPE_USE)</code>, then given the field declaration:</p>
+<pre><code>@C int @A [] @B [] f;</code></pre>
+<p><code>@A</code> applies to the array type <code>int[][]</code>, <code>@B</code> applies to its component type <code>int[]</code>, and <code>@C</code> applies to the element type <code>int</code>. For more examples, see <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-10.html#jls-10.2">10.2</a>.</p>
+<p>An important property of this syntax is that, in two declarations that differ only in the number of array levels, the annotations to the left of the type refer to the same type. For example, <code>@C</code> applies to the type <code>int</code> in all of the following declarations:</p>
+<pre><code>@C int f;
+@C int[] f;
+@C int[][] f;</code></pre>
+</blockquote>
+<blockquote>
+<p>It is customary, though not required, to write declaration annotations before all other modifiers, and type annotations immediately before the type to which they apply.</p>
+</blockquote>
+<p>It is possible for an annotation to appear at a syntactic location in a program where it could plausibly apply to a declaration, or a type, or both. This can happen in any of the five declaration contexts where modifiers immediately precede the type of the declared entity:</p>
+<ul>
+<li><p>Method declarations (including elements of annotation types)</p></li>
+<li><p>Constructor declarations</p></li>
+<li><p>Field declarations (including enum constants)</p></li>
+<li><p>Formal and exception parameter declarations</p></li>
+<li><p>Local variable declarations (including loop variables of <strong>enhanced</strong> <code>for</code> statements <del>and resource variables of <code>try</code>-with-resources statements</del>) <strong>and patterns</strong></p></li>
+</ul>
+<p>The grammar of the Java programming language unambiguously treats annotations at these locations as modifiers for a declaration (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.3">8.3</a>), but that is purely a syntactic matter. Whether an annotation applies to the declaration or to the type of the declared entity - and thus, whether the annotation is a <em>declaration annotation</em> or a <em>type annotation</em> - depends on the applicability of the annotation's type:</p>
+<ul>
+<li><p>If the annotation's type is applicable in the declaration context corresponding to the declaration, and not in type contexts, then the annotation is deemed to apply only to the declaration.</p></li>
+<li><p>If the annotation's type is applicable in type contexts, and not in the declaration context corresponding to the declaration, then the annotation is deemed to apply only to the type which is closest to the annotation.</p></li>
+<li><p>If the annotation's type is applicable in the declaration context corresponding to the declaration <em>and</em> in type contexts, then the annotation is deemed to apply to both the declaration <em>and</em> the type which is closest to the annotation.</p></li>
+</ul>
+<p>In the second and third cases above, the type which is <em>closest</em> to the annotation is determined as follows:</p>
+<ul>
+<li><p>If the annotation appears before a <code>void</code> method declaration or a local variable declaration that uses <code>var</code> (<a href="#jls-14.4">14.4</a>, <a href="#jls-14.14.2">14.14.2</a>, <a href="#jls-14.20.3">14.20.3</a>), then there is no closest type. If the annotation's type is deemed to apply only to the type which is closest to the annotation, a compile-time error occurs.</p></li>
+<li><p>If the annotation appears before a constructor declaration, then the closest type is the type of the newly constructed object. The type of the newly constructed object is the fully qualified name of the type immediately enclosing the constructor declaration. Within that fully qualified name, the annotation applies to the simple type name indicated by the constructor declaration.</p></li>
+<li><p>In all other cases, the closest type is the type written in source code for the declared entity; if that type is an array type, then the element type is deemed to be closest to the annotation.</p>
+<blockquote>
+<p>For example, in the field declaration <code>@Foo public static String f;</code>, the type which is closest to <code>@Foo</code> is <code>String</code>. (If the type of the field declaration had been written as <code>java.lang.String</code>, then <code>java.lang.String</code> would be the type closest to <code>@Foo</code>, and later rules would prohibit a type annotation from applying to the package name <code>java</code>.) In the generic method declaration <code>@Foo &lt;T&gt; int[] m() {...}</code>, the type written for the declared entity is <code>int[]</code>, so <code>@Foo</code> applies to the element type <code>int</code>.</p>
+</blockquote>
+<blockquote>
+<p>Local variable declarations which do not use <code>var</code> are similar to formal parameter declarations of lambda expressions, in that both allow declaration annotations and type annotations in source code, but only the type annotations can be stored in the <code>class</code> file.</p>
+</blockquote></li>
+</ul>
+<p>It is a compile-time error if an annotation of type <em>T</em> is syntactically a modifier for:</p>
+<ul>
+<li><p>a module declaration, but <em>T</em> is not applicable to module declarations.</p></li>
+<li><p>a package declaration, but <em>T</em> is not applicable to package declarations.</p></li>
+<li><p>a class, interface, or enum declaration, but <em>T</em> is not applicable to type declarations or type contexts; or an annotation type declaration, but <em>T</em> is not applicable to annotation type declarations or type declarations or type contexts.</p></li>
+<li><p>a method declaration (including an element of an annotation type), but <em>T</em> is not applicable to method declarations or type contexts.</p></li>
+<li><p>a constructor declaration, but <em>T</em> is not applicable to constructor declarations or type contexts.</p></li>
+<li><p>a type parameter declaration of a generic class, interface, method, or constructor, but <em>T</em> is not applicable to type parameter declarations or type contexts.</p></li>
+<li><p>a field declaration (including an enum constant), but <em>T</em> is not applicable to field declarations or type contexts.</p></li>
+<li><p>a formal or exception parameter declaration, but <em>T</em> is not applicable to either formal and exception parameter declarations or type contexts.</p></li>
+<li><p>a receiver parameter, but <em>T</em> is not applicable to type contexts.</p></li>
+<li><p>a local variable declaration (including a loop variable of <del>a</del> <strong>an enhanced</strong> <code>for</code> statement <del>or a resource variable of a <code>try</code>-with-resources statement</del>) <strong>or a type pattern</strong>, but <em>T</em> is not applicable to local variable declarations or type contexts.</p></li>
+</ul>
+<blockquote>
+<p>Five of these nine clauses mention &quot;... or type contexts&quot; because they characterize the five syntactic locations where an annotation could plausibly apply either to a declaration or to the type of a declared entity. Furthermore, two of the nine clauses - for class, interface, enum, and annotation type declarations, and for type parameter declarations - mention &quot;... or type contexts&quot; because it may be convenient to apply an annotation whose type is meta-annotated with <code>@Target(ElementType.TYPE_USE)</code> (thus, applicable in type contexts) to a type declaration.</p>
+</blockquote>
+<p>A type annotation is <em>admissible</em> if both of the following are true:</p>
+<ul>
+<li><p>The simple name to which the annotation is closest is classified as a <em>TypeName</em>, not a <em>PackageName</em>.</p></li>
+<li><p>If the simple name to which the annotation is closest is followed by &quot;<code>.</code>&quot; and another <em>TypeName</em> - that is, the annotation appears as <code>@Foo T.U</code> - then <code>U</code> denotes an inner class of <code>T</code>.</p></li>
+</ul>
+<blockquote>
+<p>The intuition behind the second clause is that if <code>Outer.this</code> is legal in a nested class enclosed by <code>Outer</code>, then <code>Outer</code> may be annotated because it represents the type of some object at run time. On the other hand, if <code>Outer.this</code> is not legal - because the class where it appears has no enclosing instance of <code>Outer</code> at run time - then <code>Outer</code> may not be annotated because it is logically just a name, akin to components of a package name in a fully qualified type name.</p>
+</blockquote>
+<blockquote>
+<p>For example, in the following program, it is not possible to write <code>A.this</code> in the body of <code>B</code>, as <code>B</code> has no lexically enclosing instances (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.5.1">8.5.1</a>). Therefore, it is not possible to apply <code>@Foo</code> to <code>A</code> in the type <code>A.B</code>, because <code>A</code> is logically just a name, not a type.</p>
+<pre><code>@Target(ElementType.TYPE_USE)
+@interface Foo {}
+
+class A {
+    static class B {}
+}
+
+@Foo A.B x;  // Illegal </code></pre>
+<p>On the other hand, in the following program, it is possible to write <code>C.this</code> in the body of <code>D</code>. Therefore, it is possible to apply <code>@Foo</code> to <code>C</code> in the type <code>C.D</code>, because <code>C</code> represents the type of some object at run time.</p>
+<pre><code>@Target(ElementType.TYPE_USE)
+@interface Foo {}
+
+class Test {
+    static class C {
+        class D {}
+    }
+
+    @Foo C.D x;  // Legal 
+}</code></pre>
+</blockquote>
+<p>It is a compile-time error if an annotation of type <em>T</em> applies to the outermost level of a type in a type context, and <em>T</em> is not applicable in type contexts or the declaration context (if any) which occupies the same syntactic location.</p>
+<p>It is a compile-time error if an annotation of type <em>T</em> applies to a part of a type (that is, not the outermost level) in a type context, and <em>T</em> is not applicable in type contexts.</p>
+<p>It is a compile-time error if an annotation of type <em>T</em> applies to a type (or any part of a type) in a type context, and <em>T</em> is applicable in type contexts, and the annotation is not admissible.</p>
+<blockquote>
+<p>For example, assume an annotation type <code>TA</code> which is meta-annotated with just <code>@Target(ElementType.TYPE_USE)</code>. The terms <code>@TA java.lang.Object</code> and <code>java.@TA lang.Object</code> are illegal because the simple name to which <code>@TA</code> is closest is classified as a package name. On the other hand, <code>java.lang.@TA Object</code> is legal.</p>
+</blockquote>
+<blockquote>
+<p>Note that the illegal terms are illegal &quot;everywhere&quot;. The ban on annotating package names applies broadly: to locations which are solely type contexts, such as <code>class ... extends @TA java.lang.Object {...}</code>, and to locations which are both declaration and type contexts, such as <code>@TA java.lang.Object f;</code>. (There are no locations which are solely declaration contexts where a package name could be annotated, as class, package, and type parameter declarations use only simple names.)</p>
+</blockquote>
+<blockquote>
+<p>If <code>TA</code> is additionally meta-annotated with <code>@Target(ElementType.FIELD)</code>, then the term <code>@TA java.lang.Object</code> is legal in locations which are both declaration and type contexts, such as a field declaration <code>@TA java.lang.Object f;</code>. Here, <code>@TA</code> is deemed to apply to the declaration of <code>f</code> (and not to the type <code>java.lang.Object</code>) because <code>TA</code> is applicable in the field declaration context.</p>
+</blockquote>
+<h2 id="jls-14">Chapter 14: <del>Blocks and</del> Statements <strong>and Patterns</strong></h2>
+<h3 id="jls-14.4">14.4 Local Variable <del>Declaration Statements</del> <strong>Declarations</strong></h3>
+<div class="deleted">
+<p>A <em>local variable declaration statement</em> declares one or more local variable names.</p>
+<dl>
+<dt><em>LocalVariableDeclarationStatement:</em></dt>
+<dd><em>LocalVariableDeclaration</em> <code>;</code>
+</dd>
+</dl>
+</div>
+<p><strong>A <em>local variable declaration</em> declares one or more local variables.</strong></p>
+<dl>
+<dt><em>LocalVariableDeclaration:</em></dt>
+<dd>{<em>VariableModifier</em>} <em>LocalVariableType</em> <em>VariableDeclaratorList</em>
+</dd>
+<dt><em>LocalVariableType:</em></dt>
+<dd><em>UnannType</em>
+</dd>
+<dd><code>var</code>
+</dd>
+</dl>
+<blockquote>
+<p>See <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.3">8.3</a> for <em>UnannType</em>. The following productions from <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-4.html#jls-4.3">4.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.3">8.3</a>, and <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.1">8.4.1</a> are shown here for convenience:</p>
+</blockquote>
+<blockquote>
+<dl>
+<dt><em>VariableModifier:</em></dt>
+<dd><em>Annotation</em>
+</dd>
+<dd><code>final</code>
+</dd>
+<dt><em>VariableDeclaratorList:</em></dt>
+<dd><em>VariableDeclarator</em> {<code>,</code> <em>VariableDeclarator</em>}
+</dd>
+<dt><em>VariableDeclarator:</em></dt>
+<dd><em>VariableDeclaratorId</em> [<code>=</code> <em>VariableInitializer</em>]
+</dd>
+<dt><em>VariableDeclaratorId:</em></dt>
+<dd><em>Identifier</em> [<em>Dims</em>]
+</dd>
+<dt><em>Dims:</em></dt>
+<dd>{<em>Annotation</em>} <code>[</code> <code>]</code> {{<em>Annotation</em>} <code>[</code> <code>]</code>}
+</dd>
+<dt><em>VariableInitializer:</em></dt>
+<dd><em>Expression</em>
+</dd>
+<dd><em>ArrayInitializer</em>
+</dd>
+</dl>
+</blockquote>
+<div class="deleted">
+<p>Every local variable declaration statement is immediately contained by a block. Local variable declaration statements may be intermixed freely with other kinds of statements in the block.</p>
+</div>
+<p>Apart from local variable declaration statements, a local variable <del>can be declared by</del> <strong>declaration may appear in</strong> the header of a basic <code>for</code> statement (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.14.1">14.14.1</a>)<del>, an enhanced <code>for</code> statement (<a href="#jls-14.14.2">14.14.2</a>),</del> or <strong>as a resource in</strong> a <code>try</code>-with-resources statement (<a href="#jls-14.20.3">14.20.3</a>). <strong>An enhanced <code>for</code> statement (<a href="#jls-14.14.2">14.14.2</a>) implicitly provides a local variable declaration statement.</strong></p>
+<p>The rules for annotation modifiers on a local variable declaration are specified in <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.7.4">9.7.4</a> and <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-9.html#jls-9.7.5">9.7.5</a>.</p>
+<p>It is a compile-time error if <code>final</code> appears more than once as a modifier for a local variable declaration.</p>
+<p>It is a compile-time error if the <em>LocalVariableType</em> is <code>var</code> and any of the following are true:</p>
+<ul>
+<li><p>More than one <em>VariableDeclarator</em> is listed.</p></li>
+<li><p>The <em>VariableDeclaratorId</em> has one or more bracket pairs.</p></li>
+<li><p>The <em>VariableDeclarator</em> lacks an initializer.</p></li>
+<li><p>The initializer of the <em>VariableDeclarator</em> is an <em>ArrayInitializer</em>.</p></li>
+<li><p>The initializer of the <em>VariableDeclarator</em> contains a reference to the variable.</p></li>
+</ul>
+<div class="example">
+<p>Example 14.4-1. Local Variables Declared With <code>var</code></p>
+<p>The following code illustrates these rules restricting the use of <code>var</code>:</p>
+<pre><code>var a = 1;            // Legal
+var b = 2, c = 3.0;   // Illegal: multiple declarators
+var d[] = new int[4]; // Illegal: extra bracket pairs
+var e;                // Illegal: no initializer
+var f = { 6 };        // Illegal: array initializer
+var g = (g = 7);      // Illegal: self reference in initializer</code></pre>
+<p>These restrictions help to avoid confusion about the type being represented by <code>var</code>.</p>
+</div>
+<h4 id="jls-14.4.1">14.4.1 Local Variable Declarators and Types</h4>
+<p>Each <em>declarator</em> in a local variable declaration declares one local variable, whose name is the <em>Identifier</em> that appears in the declarator.</p>
+<p>If the optional keyword <code>final</code> appears at the start of the declaration, the variable being declared is a final variable (<a href="#jls-4.12.4">4.12.4</a>).</p>
+<p>The declared type of a local variable is determined as follows:</p>
+<ul>
+<li><p>If <em>LocalVariableType</em> is an <em>UnannType</em>, and no bracket pairs appear in <em>UnannType</em> or <em>VariableDeclaratorId</em>, then <em>UnannType</em> denotes the type of the local variable.</p></li>
+<li><p>If <em>LocalVariableType</em> is an <em>UnannType</em>, and bracket pairs appear in <em>UnannType</em> or <em>VariableDeclaratorId</em>, then the type of the local variable is specified by <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-10.html#jls-10.2">10.2</a>.</p></li>
+<li><p>If <em>LocalVariableType</em> is <code>var</code>, then let <em>T</em> be the type of the initializer expression when treated as if it did not appear in an assignment context, and were thus a standalone expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.2">15.2</a>). The type of the local variable is the upward projection of <em>T</em> with respect to all synthetic type variables mentioned by <em>T</em> (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-4.html#jls-4.10.5">4.10.5</a>).</p>
+<p>It is a compile-time error if <em>T</em> is the null type.</p>
+<blockquote>
+<p>Because the initializer is treated as if it did not appear in an assignment context, an error occurs if it is a lambda expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.27">15.27</a>) or a method reference expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.13">15.13</a>).</p>
+</blockquote></li>
+</ul>
+<div class="example">
+<p>Example 14.4.1-1. Type of Local Variables Declared With <code>var</code></p>
+<p>The following code illustrates the typing of variables declared with <code>var</code>:</p>
+<pre><code>var a = 1;                // a has type &#39;int&#39;
+var b = java.util.List.of(1, 2);  // b has type &#39;List&lt;Integer&gt;&#39;
+var c = &quot;x&quot;.getClass();   // c has type &#39;Class&lt;? extends String&gt;&#39; 
+                          // (see JLS 15.12.2.6)
+var d = new Object() {};  // d has the type of the anonymous class
+var e = (CharSequence &amp; Comparable&lt;String&gt;) &quot;x&quot;;
+                          // e has type CharSequence &amp; Comparable&lt;String&gt;
+var f = () -&gt; &quot;hello&quot;;    // Illegal: lambda not in an assignment context
+var g = null;             // Illegal: null type</code></pre>
+<p>Note that some variables declared with <code>var</code> cannot be declared with an explicit type, because the type of the variable is not denotable.</p>
+</div>
+<blockquote>
+<p>Upward projection is applied to the type of the initializer when determining the type of the variable. If the type of the initializer contains capture variables, this projection maps the type of the initializer to a supertype that does not contain capture variables.</p>
+</blockquote>
+<blockquote>
+<p>While it would be possible to allow the type of the variable to mention capture variables, by projecting them away we enforce an attractive invariant that the scope of a capture variable is never larger than the statement containing the expression whose type is captured. Informally, capture variables cannot &quot;leak&quot; into subsequent statements.</p>
+</blockquote>
+<p>A local variable of type <code>float</code> always contains a value that is an element of the float value set (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-4.html#jls-4.2.3">4.2.3</a>); similarly, a local variable of type <code>double</code> always contains a value that is an element of the double value set. It is not permitted for a local variable of type <code>float</code> to contain an element of the float-extended-exponent value set that is not also an element of the float value set, nor for a local variable of type <code>double</code> to contain an element of the double-extended-exponent value set that is not also an element of the double value set.</p>
+<p>The scope and shadowing of a local variable declaration is specified in <a href="#jls-6.3">6.3</a> and <a href="#jls-6.4">6.4</a>.</p>
+<h4 id="jls-14.4.2">14.4.2 <del>Execution of Local Variable Declarations</del> <strong>Local Variable Declaration Statements</strong></h4>
+<div class="inserted">
+<p>A <em>local variable declaration statement</em> consists of a local variable declaration, which can declare and optionally initialize one or more local variables (<a href="#jls-4.12.3">4.12.3</a>).</p>
+<dl>
+<dt><em>LocalVariableDeclarationStatement:</em></dt>
+<dd><em>LocalVariableDeclaration</em> <code>;</code>
+</dd>
+</dl>
+<p>Every local variable declaration statement is immediately contained by a block. Local variable declaration statements may be intermixed freely with other kinds of statements in the block.</p>
+</div>
+<p>A local variable declaration statement is an executable statement. <strong>(Thus it is local variable declaration statements, not local variable declarations, that are executed.)</strong> Every time it is executed, the declarators are processed in order from left to right. If a declarator has an initializer, the initializer is evaluated and its value is assigned to the variable.</p>
+<blockquote>
+<p>If a declarator does not have an initializer, then every reference to the variable must be preceded by execution of an assignment to the variable, or a compile-time error occurs by the rules of <a href="#jls-16.html">16</a>.</p>
+</blockquote>
+<p>Each initializer (except the first) is evaluated only if evaluation of the preceding initializer completes normally.</p>
+<p>Execution of the local variable declaration completes normally only if evaluation of the last initializer completes normally.</p>
+<p>If the local variable declaration contains no initializers, then executing it always completes normally.</p>
+<h3 id="jls-14.14">14.14 The <code>for</code> Statement</h3>
+<h4 id="jls-14.14.2">14.14.2 The enhanced <code>for</code> statement</h4>
+<p>The enhanced <code>for</code> statement has the form:</p>
+<dl>
+<dt><em>EnhancedForStatement:</em></dt>
+<dd><code>for</code> <code>(</code> {<em>VariableModifier</em>} <em>LocalVariableType</em> <em>VariableDeclaratorId</em> <code>:</code> <em>Expression</em> <code>)</code><br />
+<em>Statement</em>
+</dd>
+<dt><em>EnhancedForStatementNoShortIf:</em></dt>
+<dd><code>for</code> <code>(</code> {<em>VariableModifier</em>} <em>LocalVariableType</em> <em>VariableDeclaratorId</em> <code>:</code> <em>Expression</em> <code>)</code><br />
+<em>StatementNoShortIf</em>
+</dd>
+</dl>
+<blockquote>
+<p>The following productions from <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-4.html#jls-4.3">4.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.3">8.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.1">8.4.1</a>, and <a href="#jls-14.4">14.4</a> are shown here for convenience:</p>
+<dl>
+<dt><em>VariableModifier:</em></dt>
+<dd><em>Annotation</em>
+</dd>
+<dd><code>final</code>
+</dd>
+<dt><em>LocalVariableType:</em></dt>
+<dd><em>UnannType</em>
+</dd>
+<dd><code>var</code>
+</dd>
+<dt><em>VariableDeclaratorId:</em></dt>
+<dd><em>Identifier</em> [<em>Dims</em>]
+</dd>
+<dt><em>Dims:</em></dt>
+<dd>{<em>Annotation</em>} <code>[</code> <code>]</code> {{<em>Annotation</em>} <code>[</code> <code>]</code>}
+</dd>
+</dl>
+</blockquote>
+<p>The header of the enhanced <code>for</code> statement <del>declares a local variable, whose name is the identifier given by <em>VariableDeclaratorId</em></del> <strong>provides a name, type, and modifiers used to implicitly declare a local variable in the body of the enhanced <code>for</code> statement</strong>.</p>
+<p><del>If the keyword <code>final</code> appears at the start of the declaration, the variable being declared is a <code>final</code> variable (<a href="#jls-4.12.4">4.12.4</a>).</del></p>
+<p>It is a compile-time error if the <em>LocalVariableType</em> is <code>var</code> and the <em>VariableDeclaratorId</em> has one or more bracket pairs.</p>
+<p>The type of the <em>Expression</em> must be a subtype of the raw type <code>Iterable</code> or an array type (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-10.html#jls-10.1">10.1</a>), or a compile-time error occurs.</p>
+<p>The type of the local variable is determined as follows:</p>
+<ul>
+<li><p>If <em>LocalVariableType</em> is an <em>UnannType</em>, and no bracket pairs appear in <em>UnannType</em> or <em>VariableDeclaratorId</em>, then <em>UnannType</em> denotes the type of the local variable.</p></li>
+<li><p>If <em>LocalVariableType</em> is an <em>UnannType</em>, and bracket pairs appear in <em>UnannType</em> or <em>VariableDeclaratorId</em>, then the type of the local variable is specified by <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-10.html#jls-10.2">10.2</a>.</p></li>
+<li><p>If <em>LocalVariableType</em> is <code>var</code>, then let <em>T</em> be derived from the type of the <em>Expression</em>, as follows:</p>
+<ul>
+<li><p>If the <em>Expression</em> has an array type, then <em>T</em> is the component type of the array type.</p></li>
+<li><p>Otherwise, if the <em>Expression</em> has a type that is a subtype of <code>Iterable&lt;</code><em>X</em><code>&gt;</code>, for some type <em>X</em>, then <em>T</em> is <em>X</em>.</p></li>
+<li><p>Otherwise, the <em>Expression</em> has a type that is a subtype of the raw type <code>Iterable</code>, and <em>T</em> is <code>Object</code>.</p></li>
+</ul>
+<p>The type of the local variable is the upward projection of <em>T</em> with respect to all synthetic type variables mentioned by <em>T</em> (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-4.html#jls-4.10.5">4.10.5</a>).</p></li>
+</ul>
+<p>The scope and shadowing of the local variable is specified in <a href="#jls-6.3">6.3</a> and <a href="#jls-6.4">6.4</a>.</p>
+<p>When an enhanced <code>for</code> statement is executed, the local variable is initialized, on each iteration of the loop, to successive elements of the array or <code>Iterable</code> produced by the expression. The precise meaning of the enhanced <code>for</code> statement is given by translation into a basic <code>for</code> statement, as follows:</p>
+<ul>
+<li><p>If the type of <em>Expression</em> is a subtype of <code>Iterable</code>, then the translation is as follows.</p>
+<p>If the type of <em>Expression</em> is a subtype of <code>Iterable&lt;</code><em>X</em><code>&gt;</code> for some type argument <em>X</em>, then let <em>I</em> be the type <code>java.util.Iterator&lt;</code><em>X</em><code>&gt;</code>; otherwise, let <em>I</em> be the raw type <code>java.util.Iterator</code>.</p>
+<p>The enhanced <code>for</code> statement is equivalent to a basic <code>for</code> statement of the form:</p>
+<pre><code>for (*I* #i = *Expression*.iterator(); #i.hasNext(); ) {
+    *{VariableModifier} TargetType Identifier* =
+        (*TargetType*) #i.next();
+    *Statement*
+}</code></pre>
+<p><code>#i</code> is an automatically generated identifier that is distinct from any other identifiers (automatically generated or otherwise) that are in scope (<a href="#jls-6.3">6.3</a>) at the point where the enhanced <code>for</code> statement occurs.</p>
+<p>If the declared type of the local variable in the header of the enhanced <code>for</code> statement is a reference type, then <em>TargetType</em> is that declared type; otherwise, <em>TargetType</em> is the upper bound of the capture conversion (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-5.html#jls-5.1.10">5.1.10</a>) of the type argument of <em>I</em>, or <code>Object</code> if <em>I</em> is raw.</p>
+<blockquote>
+<p>For example, this code:</p>
+<pre><code>List&lt;? extends Integer&gt; l = ...
+for (float i : l) ...</code></pre>
+<p>will be translated to:</p>
+<pre><code>for (Iterator&lt;Integer&gt; #i = l.iterator(); #i.hasNext(); ) {
+    float #i0 = (Integer)#i.next();
+    ...</code></pre>
+</blockquote></li>
+<li><p>Otherwise, the <em>Expression</em> necessarily has an array type, <em>T</em><code>[]</code>.</p>
+<p>Let <em>L<sub>1</sub></em> ... <em>L<sub>m</sub></em> be the (possibly empty) sequence of labels immediately preceding the enhanced <code>for</code> statement.</p>
+<p>The enhanced <code>for</code> statement is equivalent to a basic <code>for</code> statement of the form:</p>
+<pre><code>*T*`[]` #a = *Expression*;
+*L~1~*: *L~2~*: ... *L~m~*:
+for (int #i = 0; #i &lt; #a.length; #i++) {
+    *{VariableModifier} TargetType Identifier* = #a[#i];
+    *Statement*
+}</code></pre>
+<p><code>#a</code> and <code>#i</code> are automatically generated identifiers that are distinct from any other identifiers (automatically generated or otherwise) that are in scope at the point where the enhanced <code>for</code> statement occurs.</p>
+<p><em>TargetType</em> is the declared type of the local variable in the header of the enhanced <code>for</code> statement.</p></li>
+</ul>
+<div class="example">
+<p>Example 14.14-1. Enhanced <code>for</code> And Arrays</p>
+<p>The following program, which calculates the sum of an integer array, shows how enhanced <code>for</code> works for arrays:</p>
+<pre><code>int sum(int[] a) {
+    int sum = 0;
+    for (int i : a) sum += i;
+    return sum;
+}</code></pre>
+</div>
+<div class="example">
+<p>Example 14.14-2. Enhanced <code>for</code> And Unboxing Conversion</p>
+<p>The following program combines the enhanced <code>for</code> statement with auto-unboxing to translate a histogram into a frequency table:</p>
+<pre><code>Map&lt;String, Integer&gt; histogram = ...;
+double total = 0;
+for (int i : histogram.values())
+    total += i;
+for (Map.Entry&lt;String, Integer&gt; e : histogram.entrySet())
+    System.out.println(e.getKey() + &quot; &quot; + e.getValue() / total);
+}</code></pre>
+</div>
+<h3 id="jls-14.20">14.20 The <code>try</code> statement</h3>
+<h4 id="jls-14.20.3">14.20.3 <code>try</code>-with-resources</h4>
+<p>A <code>try</code>-with-resources statement is parameterized with local variables (known as <em>resources</em>) that are initialized before execution of the <code>try</code> block and closed automatically, in the reverse order from which they were initialized, after execution of the <code>try</code> block. <code>catch</code> clauses and a <code>finally</code> clause are often unnecessary when resources are closed automatically.</p>
+<dl>
+<dt><em>TryWithResourcesStatement:</em></dt>
+<dd><code>try</code> <em>ResourceSpecification</em> <em>Block</em> [<em>Catches</em>] [<em>Finally</em>]
+</dd>
+<dt><em>ResourceSpecification:</em></dt>
+<dd><code>(</code> <em>ResourceList</em> [<code>;</code>] <code>)</code>
+</dd>
+<dt><em>ResourceList:</em></dt>
+<dd><em>Resource</em> {<code>;</code> <em>Resource</em>}
+</dd>
+<dt><em>Resource:</em></dt>
+<dd><del>{<em>VariableModifier</em>} <em>LocalVariableType</em> <em>Identifier</em> <code>=</code> <em>Expression</em></del> <strong><em>LocalVariableDeclaration</em></strong>
+</dd>
+<dd><em>VariableAccess</em>
+</dd>
+<dt><em>VariableAccess:</em></dt>
+<dd><em>ExpressionName</em>
+</dd>
+<dd><em>FieldAccess</em>
+</dd>
+</dl>
+<blockquote>
+<p>The following productions from <strong><a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-4.html#jls-4.3">4.3</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.3">8.3</a>,</strong> <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.1">8.4.1</a> and <a href="#jls-14.4">14.4</a> are shown here for convenience:</p>
+</blockquote>
+<div class="deleted">
+<blockquote>
+<dl>
+<dt><em>VariableModifier:</em></dt>
+<dd><em>Annotation</em>
+</dd>
+<dd><code>final</code>
+</dd>
+<dt><em>LocalVariableType:</em></dt>
+<dd><em>UnannType</em>
+</dd>
+<dd><code>var</code>
+</dd>
+</dl>
+</blockquote>
+</div>
+<div class="inserted">
+<blockquote>
+<dl>
+<dt><em>LocalVariableDeclaration:</em></dt>
+<dd>{<em>VariableModifier</em>} <em>LocalVariableType</em> <em>VariableDeclaratorList</em>
+</dd>
+<dt><em>LocalVariableType:</em></dt>
+<dd><em>UnannType</em>
+</dd>
+<dd><code>var</code>
+</dd>
+<dt><em>VariableModifier:</em></dt>
+<dd><em>Annotation</em>
+</dd>
+<dd><code>final</code>
+</dd>
+<dt><em>VariableDeclaratorList:</em></dt>
+<dd><em>VariableDeclarator</em> {<code>,</code> <em>VariableDeclarator</em>}
+</dd>
+<dt><em>VariableDeclarator:</em></dt>
+<dd><em>VariableDeclaratorId</em> [<code>=</code> <em>VariableInitializer</em>]
+</dd>
+<dt><em>VariableDeclaratorId:</em></dt>
+<dd><em>Identifier</em> [<em>Dims</em>]
+</dd>
+<dt><em>Dims:</em></dt>
+<dd>{<em>Annotation</em>} <code>[</code> <code>]</code> {{<em>Annotation</em>} <code>[</code> <code>]</code>}
+</dd>
+</dl>
+</blockquote>
+</div>
+<p>A <em>resource specification</em> uses variables to denote <em>resources</em> for the <code>try</code> statement, either by declaring local variables with initializer expressions or by referring to suitable existing variables. An existing variable is referred to by either an expression name (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-6.html#jls-6.5.6">6.5.6</a>) or a field access expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.11">15.11</a>).</p>
+<div class="inserted">
+<p>Any local variable declaration (<a href="#jls-14.4">14.4</a>) appearing in the resource specification is a restricted form of a local variable declaration; the following must all be true, otherwise a compile-time error occurs:</p>
+<ul>
+<li><p>The <em>VariableDeclaratorList</em> consists of a single <em>VariableDeclarator</em>.</p></li>
+<li><p>The <em>VariableDeclarator</em> has an initializer.</p></li>
+<li><p>The <em>VariableDeclaratorId</em> has no bracket pairs.</p></li>
+</ul>
+</div>
+<p>It is a compile-time error for a resource specification to declare two variables with the same name.</p>
+<p>It is a compile-time error if <code>final</code> appears more than once as a modifier for each variable declared in a resource specification.</p>
+<p>A variable declared in a resource specification is implicitly declared <code>final</code> if it is not explicitly declared <code>final</code> (<a href="#jls-4.12.4">4.12.4</a>).</p>
+<p>A resource denoted by an expression name or field access expression must be a <code>final</code> or effectively <code>final</code> variable that is definitely assigned before the <code>try</code>-with-resources statement (<a href="#jls-16.html">16</a>), or a compile-time error occurs.</p>
+<p>It is a compile-time error if the <em>LocalVariableType</em> of a variable declared in a resource specification is <code>var</code> and the initializer expression contains a reference to the variable.</p>
+<p>The type of a variable declared in a resource specification is determined as follows:</p>
+<ul>
+<li><p>If <em>LocalVariableType</em> is an <em>UnannType</em>, then <em>UnannType</em> denotes the type of the local variable.</p></li>
+<li><p>If <em>LocalVariableType</em> is <code>var</code>, then let <em>T</em> be the type of the initializer expression when treated as if it did not appear in an assignment context, and were thus a standalone expression (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.2">15.2</a>). The type of the local variable is the upward projection of <em>T</em> with respect to all synthetic type variables mentioned by <em>T</em> (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-4.html#jls-4.10.5">4.10.5</a>).</p>
+<p>It is a compile-time error if <em>T</em> is the null type.</p></li>
+</ul>
+<p>The type of a variable declared or referred to as a resource in a resource specification must be a subtype of <code>AutoCloseable</code>, or a compile-time error occurs.</p>
+<p>The scope and shadowing of a variable declared in a resource specification is specified in <a href="#jls-6.3">6.3</a> and <a href="#jls-6.4">6.4</a>.</p>
+<p>Resources are initialized in left-to-right order. If a resource fails to initialize (that is, its initializer expression throws an exception), then all resources initialized so far by the <code>try</code>-with-resources statement are closed. If all resources initialize successfully, the <code>try</code> block executes as normal and then all non-null resources of the <code>try</code>-with-resources statement are closed.</p>
+<p>Resources are closed in the reverse order from that in which they were initialized. A resource is closed only if it initialized to a non-null value. An exception from the closing of one resource does not prevent the closing of other resources. Such an exception is <em>suppressed</em> if an exception was thrown previously by an initializer, the <code>try</code> block, or the closing of a resource.</p>
+<p>A <code>try</code>-with-resources statement whose resource specification indicates multiple resources is treated as if it were multiple <code>try</code>-with-resources statements, each of which has a resource specification that indicates a single resource. When a <code>try</code>-with-resources statement with <em>n</em> resources (<em>n</em> &gt; 1) is translated, the result is a <code>try</code>-with-resources statement with <em>n</em>-1 resources. After <em>n</em> such translations, there are <em>n</em> nested <code>try</code>-<code>catch</code>-<code>finally</code> statements, and the overall translation is complete.</p>
+<div class="editorial">
+<p>Sections 14.22-14.29 are left deliberately unused to allow for future language evolution.</p>
+</div>
+<h3 id="jls-14.30"><strong>14.30 Patterns</strong></h3>
+<div class="inserted">
+<p>A pattern describes a test that can be performed on a value. Patterns appear as an operand of a statement or an expression, which provides the value to be tested. A pattern also declares local variables, known as <em>pattern variables</em>.</p>
+<p>The process of testing a value against a pattern is known as <em>pattern matching</em>. If a value successfully matches a pattern, the process of pattern matching also assigns values to the pattern variables declared by the pattern; otherwise the value is said to have not matched the pattern.</p>
+<p>The rules of scoping (<a href="#jls-6.3">6.3</a>) ensure that pattern variables are only in scope where pattern matching has definitely succeeded and the pattern variables will have been assigned a value. It is not possible to use a pattern variable where it has not been assigned a value.</p>
+</div>
+<h4 id="jls-14.30.1"><strong>14.30.1 Kinds of Patterns</strong></h4>
+<div class="inserted">
+<p>A <em>type pattern</em> declares a pattern variable and is used to test whether a value is an instance of the type appearing in the pattern.</p>
+<dl>
+<dt><em>Pattern</em>:</dt>
+<dd><em>TypePattern</em>
+</dd>
+<dt><em>TypePattern</em>:</dt>
+<dd>{<em>VariableModifier</em>} <em>UnannType</em> <em>Identifier</em>
+</dd>
+</dl>
+<blockquote>
+<p>The following production from <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.1">8.4.1</a> is shown here for convenience:</p>
+</blockquote>
+<blockquote>
+<dl>
+<dt><em>VariableModifier:</em></dt>
+<dd><em>Annotation</em>
+</dd>
+<dd><code>final</code>
+</dd>
+</dl>
+</blockquote>
+<p>The type of a type pattern is the type denoted by <em>UnannType</em>. It is a compile-time error if <em>UnannType</em> is not a reference type.</p>
+<p>The pattern variable declared by a type pattern has the name <em>Identifier</em> and the type denoted by <em>UnannType</em>.</p>
+<p>An expression, <em>e</em>, is <em>compatible</em> with a pattern of type <em>T</em> if the expression <em>e</em> can be converted to type <em>T</em> by a casting conversion (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-5.html#jls-5.5">5.5</a>), and the casting conversion does not make use of a narrowing reference conversion which is unchecked (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-5.html#jls-5.1.6.2">5.1.6.2</a>).</p>
+</div>
+<h4 id="jls-14.30.2"><strong>14.30.2 Pattern Matching</strong></h4>
+<div class="inserted">
+<p>Pattern matching is the process of testing a value against a pattern. If a value successfully matches a pattern, pattern matching also assigns values to the pattern variables declared by the pattern.</p>
+<p>The rules for determining whether a value successfully matches a pattern (or not) and assigning values to pattern variables are as follows:</p>
+<!-- Only needed when we get to switches etc
+- The null reference matches any type pattern.
+-->
+<ul>
+<li>A value, <em>V</em>, that is not the null reference matches a type pattern of type <em>T</em> if <em>V</em> can be cast to <em>T</em> without raising a <code>ClassCastException</code>, in which case the value <em>V</em> is assigned to the pattern variable declared by the pattern; and it does not match otherwise.</li>
+</ul>
+</div>
+<h2 id="jls-15">Chapter 15: Expressions</h2>
+<h3 id="jls-15.20">15.20 Relational Operators</h3>
+<p>The numerical comparison operators <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, and <code>&gt;=</code>, and the <code>instanceof</code> operator, are called the <em>relational operators</em>.</p>
+<dl>
+<dt><em>RelationalExpression:</em></dt>
+<dd><em>ShiftExpression</em>
+</dd>
+<dd><em>RelationalExpression</em> <code>&lt;</code> <em>ShiftExpression</em>
+</dd>
+<dd><em>RelationalExpression</em> <code>&gt;</code> <em>ShiftExpression</em>
+</dd>
+<dd><em>RelationalExpression</em> <code>&lt;=</code> <em>ShiftExpression</em>
+</dd>
+<dd><em>RelationalExpression</em> <code>&gt;=</code> <em>ShiftExpression</em>
+</dd>
+<dd><em>RelationalExpression</em> <code>instanceof</code> <del><em>ReferenceType</em></del> <strong><em>ReferenceTypeOrPattern</em></strong>
+</dd>
+</dl>
+<p>The relational operators are syntactically left-associative (they group left-to-right).</p>
+<blockquote>
+<p>However, this fact is not useful. For example, <code>a&lt;b&lt;c</code> parses as <code>(a&lt;b)&lt;c</code>, which is always a compile-time error, because the type of <code>a&lt;b</code> is always <code>boolean</code> and &lt; is not an operator on <code>boolean</code> values.</p>
+</blockquote>
+<p>The type of a relational expression is always <code>boolean</code>.</p>
+<h4 id="jls-15.20.2">15.20.2 <del>Type Comparison Operator <code>instanceof</code></del> <strong>The <code>instanceof</code> Operator</strong></h4>
+<div class="deleted">
+<p>The type of the <em>RelationalExpression</em> operand of the <code>instanceof</code> operator must be a reference type or the null type, or a compile-time error occurs.</p>
+<p>It is a compile-time error if the <em>ReferenceType</em> mentioned after the <code>instanceof</code> operator does not denote a reference type that is reifiable (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-4.html#jls-4.7">4.7</a>).</p>
+<p>If a cast of the <em>RelationalExpression</em> to the <em>ReferenceType</em> would be rejected as a compile-time error (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.16">15.16</a>), then the <code>instanceof</code> relational expression likewise produces a compile-time error. In such a situation, the result of the <code>instanceof</code> expression could never be true.</p>
+<p>At run time, the result of the <code>instanceof</code> operator is <code>true</code> if the value of the <em>RelationalExpression</em> is not <code>null</code> and the reference could be cast to the <em>ReferenceType</em> without raising a <code>ClassCastException</code>. Otherwise the result is <code>false</code>.</p>
+</div>
+<div class="inserted">
+<dl>
+<dt><em>ReferenceTypeOrPattern</em>:</dt>
+<dd><em>ReferenceType</em>
+</dd>
+<dd><em>Pattern</em>
+</dd>
+</dl>
+<p>An <code>instanceof</code> operator has one of two forms: (i) a <em>type</em> <code>instanceof</code> operator, where the <em>ReferenceTypeOrPattern</em> operand is a <em>ReferenceType</em>; or (ii) a <em>pattern</em> <code>instanceof</code> operator, where the <em>ReferenceTypeOrPattern</em> operand is a <em>Pattern</em> (<a href="#jls-14.30">14.30</a>).</p>
+<p>The following apply to a type <code>instanceof</code> operator:</p>
+<ul>
+<li><p>The type of the <em>RelationalExpression</em> operand of the type <code>instanceof</code> operator must be a reference type or the null type, or a compile-time error occurs.</p></li>
+<li><p>The expression <em>RelationalExpression</em> is compatible with the type <em>ReferenceType</em> if (i) <em>RelationalExpression</em> can be converted to type <em>ReferenceType</em> by casting conversion (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-5.html#jls-5.5">5.5</a>), and (ii) the casting conversion does not make use of a narrowing reference conversion which is unchecked (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-5.html#jls-5.1.6.2">5.1.6.2</a>). If <em>RelationalExpression</em> is not compatible with <em>ReferenceType</em> then a compile-time error occurs.</p></li>
+<li><p>At run time, the result of the <code>instanceof</code> operator is <code>true</code> if the value of the <em>RelationalExpression</em> is not the null reference and the reference could be cast to the <em>ReferenceType</em> without raising a <code>ClassCastException</code>. Otherwise the result is <code>false</code>.</p></li>
+</ul>
+<p>The following apply to a pattern <code>instanceof</code> operator:</p>
+<ul>
+<li><p>The type of the <em>RelationalExpression</em> operand of the pattern <code>instanceof</code> operator must be a reference type or the null type, or a compile-time error occurs.</p></li>
+<li><p>The <em>RelationalExpression</em> operand of a pattern <code>instanceof</code> operator must be compatible with the <em>Pattern</em> operand as defined in <a href="#jls-14.30.1">14.30.1</a>; otherwise, a compile-time error occurs.</p></li>
+<li><p>If the type of the <em>RelationalExpression</em> is a subtype of the type of the <em>Pattern</em> then a compile-time error occurs.</p></li>
+<li><p>At run time, the result of the <code>instanceof</code> operator is determined as follows:</p>
+<ul>
+<li><p>If the value of the <em>RelationalExpression</em> is the null reference, then the result is <code>false</code>.</p></li>
+<li>If the value of the <em>RelationalExpression</em> is not the null reference, then it is matched against the <em>Pattern</em>, as detailed in <a href="#jls-14.30.2">14.30.2</a> (which may result in pattern variables being assigned values). If it matches then the result of the pattern <code>instanceof</code> operator is <code>true</code>, otherwise the result of the pattern <code>instanceof</code> operator is <code>false</code>.</li>
+</ul></li>
+</ul>
+</div>
+<div class="example">
+<p>Example 15.20.2-1. The <strong>type</strong> <code>instanceof</code> Operator</p>
+<pre><code>class Point   { int x, y; }
+class Element { int atomicNumber; }
+class Test {
+    public static void main(String[] args) {
+        Point   p = new Point();
+        Element e = new Element();
+        if (e instanceof Point) {  // compile-time error
+            System.out.println(&quot;I get your point!&quot;);
+            p = (Point)e;  // compile-time error
+        }
+    }
+}</code></pre>
+<p>This program results in two compile-time errors. The cast <code>(Point)e</code> is incorrect because no instance of <code>Element</code> or any of its possible subclasses (none are shown here) could possibly be an instance of any subclass of <code>Point</code>. The <code>instanceof</code> expression is incorrect for exactly the same reason. If, on the other hand, the class <code>Point</code> were a subclass of <code>Element</code> (an admittedly strange notion in this example):</p>
+<pre><code>class Point extends Element { int x, y; }</code></pre>
+<p>then the cast would be possible, though it would require a run-time check, and the <code>instanceof</code> expression would then be sensible and valid. The cast <code>(Point)e</code> would never raise an exception because it would not be executed if the value of <code>e</code> could not correctly be cast to type <code>Point</code>.</p>
+</div>
+<h2 id="jls-16">Chapter 16: Definite Assignment</h2>
+<p>Each local variable <strong>declared by a local variable declaration</strong> (<a href="#jls-14.4">14.4</a>) and every blank <code>final</code> field (<a href="#jls-4.12.4">4.12.4</a>, <a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.3.1.2">8.3.1.2</a>) must have a <em>definitely assigned</em> value when any access of its value occurs.</p>
+<p>An access to its value consists of the simple name of the variable (or, for a field, the simple name of the field qualified by <code>this</code>) occurring anywhere in an expression except as the left-hand operand of the simple assignment operator <code>=</code> (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-15.html#jls-15.26.1">15.26.1</a>).</p>
+<p>For every access of a local variable or blank <code>final</code> field <em>x</em>, <em>x</em> must be definitely assigned before the access, or a compile-time error occurs.</p>
+<p>Similarly, every blank <code>final</code> variable must be assigned at most once; it must be <em>definitely unassigned</em> when an assignment to it occurs.</p>
+<p>Such an assignment is defined to occur if and only if either the simple name of the variable (or, for a field, its simple name qualified by <code>this</code>) occurs on the left hand side of an assignment operator.</p>
+<p>For every assignment to a blank <code>final</code> variable, the variable must be definitely unassigned before the assignment, or a compile-time error occurs.</p>
+<p>The remainder of this chapter is devoted to a precise explanation of the words &quot;definitely assigned before&quot; and &quot;definitely unassigned before&quot;.</p>
+<div class="editorial">
+<p>The rest of this section continues unchanged.</p>
+</div>
+<h3 id="jls-16.2">16.2 Definite Assignment and Statements</h3>
+<h4 id="jls-16.2.15">16.2.15 <code>try</code> Statements</h4>
+<div class="inserted">
+<p>The rules herein cover the <code>try</code> statement (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.20">14.20</a>). Since the <code>try</code>-with-resources statement (<a href="#jls-14.20.3">14.20.3</a>) is defined by translation to a basic <code>try</code> statement, no special rules need to be provided for it.</p>
+</div>
+<div class="editorial">
+<p>The text above was missing from previous editions of the JLS.</p>
+</div>
+<p>These rules apply to every <code>try</code> statement (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.20">14.20</a>), whether or not it has a <code>finally</code> block:</p>
+<ul>
+<li><p><em>V</em> is [un]assigned before the <code>try</code> block iff <em>V</em> is [un]assigned before the <code>try</code> statement.</p></li>
+<li><p><em>V</em> is definitely assigned before a <code>catch</code> block iff <em>V</em> is definitely assigned before the <code>try</code> block.</p></li>
+<li><p><em>V</em> is definitely unassigned before a <code>catch</code> block iff all of the following are true:</p>
+<ul>
+<li><p><em>V</em> is definitely unassigned after the <code>try</code> block.</p></li>
+<li><p><em>V</em> is definitely unassigned before every <code>return</code> statement that belongs to the <code>try</code> block.</p></li>
+<li><p><em>V</em> is definitely unassigned after <em>e</em> in every statement of the form <code>throw</code> <em>e</em> that belongs to the <code>try</code> block.</p></li>
+<li><p><em>V</em> is definitely unassigned after every <code>assert</code> statement that occurs in the <code>try</code> block.</p></li>
+<li><p><em>V</em> is definitely unassigned before every <code>break</code> statement that belongs to the <code>try</code> block and whose break target contains (or is) the <code>try</code> statement.</p></li>
+<li><p><em>V</em> is definitely unassigned before every <code>continue</code> statement that belongs to the <code>try</code> block and whose continue target contains the <code>try</code> statement.</p></li>
+</ul></li>
+</ul>
+<p>If a <code>try</code> statement does not have a <code>finally</code> block, then this rule also applies:</p>
+<ul>
+<li><em>V</em> is [un]assigned after the <code>try</code> statement iff <em>V</em> is [un]assigned after the <code>try</code> block and <em>V</em> is [un]assigned after every <code>catch</code> block in the <code>try</code> statement.</li>
+</ul>
+<p>If a <code>try</code> statement does have a <code>finally</code> block, then these rules also apply:</p>
+<ul>
+<li><p><em>V</em> is definitely assigned after the <code>try</code> statement iff at least one of the following is true:</p>
+<ul>
+<li><p><em>V</em> is definitely assigned after the <code>try</code> block and <em>V</em> is definitely assigned after every <code>catch</code> block in the <code>try</code> statement.</p></li>
+<li><p><em>V</em> is definitely assigned after the <code>finally</code> block.</p></li>
+</ul></li>
+<li><p><em>V</em> is definitely unassigned after the <code>try</code> statement iff <em>V</em> is definitely unassigned after the <code>finally</code> block.</p></li>
+<li><p><em>V</em> is definitely assigned before the <code>finally</code> block iff <em>V</em> is definitely assigned before the <code>try</code> statement.</p></li>
+<li><p><em>V</em> is definitely unassigned before the <code>finally</code> block iff all of the following are true:</p>
+<ul>
+<li><p><em>V</em> is definitely unassigned after the <code>try</code> block.</p></li>
+<li><p><em>V</em> is definitely unassigned before every <code>return</code> statement that belongs to the <code>try</code> block.</p></li>
+<li><p><em>V</em> is definitely unassigned after <em>e</em> in every statement of the form <code>throw</code> <em>e</em> that belongs to the <code>try</code> block.</p></li>
+<li><p><em>V</em> is definitely unassigned after every <code>assert</code> statement that occurs in the <code>try</code> block.</p></li>
+<li><p><em>V</em> is definitely unassigned before every <code>break</code> statement that belongs to the <code>try</code> block and whose break target contains (or is) the <code>try</code> statement.</p></li>
+<li><p><em>V</em> is definitely unassigned before every <code>continue</code> statement that belongs to the <code>try</code> block and whose continue target contains the <code>try</code> statement.</p></li>
+<li><p><em>V</em> is definitely unassigned after every <code>catch</code> block of the <code>try</code> statement.</p></li>
+</ul></li>
+</ul>
+<h2 id="jls-17">Chapter 17: Threads and Locks</h2>
+<h3 id="jls-17.4">17.4 Memory Model</h3>
+<h4 id="jls-17.4.1">17.4.1 Shared Variables</h4>
+<p>Memory that can be shared between threads is called <em>shared memory</em> or <em>heap memory</em>.</p>
+<p>All instance fields, <code>static</code> fields, and array elements are stored in heap memory. In this chapter, we use the term <em>variable</em> to refer to both fields and array elements.</p>
+<p>Local variables (<a href="#jls-14.4">14.4</a><strong>, <a href="#jls-14.30">14.30</a></strong>), formal method parameters (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-8.html#jls-8.4.1">8.4.1</a>), and exception handler parameters (<a href="https://docs.oracle.com/javase/specs/jls/se15/html/jls-14.html#jls-14.20">14.20</a>) are never shared between threads and are unaffected by the memory model.</p>
+<p>Two accesses to (reads of or writes to) the same variable are said to be <em>conflicting</em> if at least one of the accesses is a write.</p>
+</main><footer class="legal-footer"><hr/><a href="../legal/copyright.html">Copyright</a> &copy; 1993, 2021, Oracle and/or its affiliates, 500 Oracle Parkway, Redwood Shores, CA 94065 USA.<br>All rights reserved. Use is subject to <a href="https://www.oracle.com/java/javase/terms/license/java16.0.1speclicense.html">license terms</a> and the <a href="https://www.oracle.com/technetwork/java/redist-137594.html">documentation redistribution policy</a>. <!-- Version 16.0.1+9-24 --></footer>
+</body>
+</html>
